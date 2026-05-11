@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sistema;
 use App\Http\Controllers\Controller;
 use App\Models\Entradas;
 use App\Models\HistorialEntradas;
+use App\Models\HistorialEntradasDeta;
 use App\Models\HistorialSalidas;
 use App\Models\HistorialSalidasDeta;
 use App\Models\HistorialTransferido;
@@ -314,23 +315,35 @@ class ReportesController extends Controller
 
             $lista = Materiales::orderBy('nombre', 'ASC')->get();
 
+            $granTotal = 0;
+
             foreach ($lista as $item) {
                 $medida = '';
                 if($dataUnidad = UnidadMedida::where('id', $item->id_medida)->first()){
                     $medida = $dataUnidad->nombre;
                 }
-
                 $item->medida = $medida;
 
                 $arrayEntradas = Entradas::where('id_material', $item->id)->get();
 
-                $sumatoria = 0;
+                $sumatoria    = 0;
+                $totalDinero  = 0;
+                $precioUnit   = 0;
+
                 foreach ($arrayEntradas as $data){
-                    $sumatoria += $data->cantidad;
+                    $sumatoria   += $data->cantidad;
+                    $totalDinero += ($data->precio * $data->cantidad);
+                    $precioUnit   = $data->precio; // último precio registrado
                 }
 
-                $item->total = $sumatoria;
+                $granTotal += $totalDinero;
+
+                $item->total         = $sumatoria;
+                $item->precioUnit    = number_format($precioUnit, 2);
+                $item->totalDinero   = number_format($totalDinero, 2);
             }
+
+            $granTotalFmt = number_format($granTotal, 2);
 
             $mpdf = new \Mpdf\Mpdf(['tempDir' => sys_get_temp_dir(), 'format' => 'LETTER']);
             $mpdf->SetTitle('Inventario Actual');
@@ -339,48 +352,66 @@ class ReportesController extends Controller
             $logoalcaldia = 'images/logo.png';
 
             $tabla = "
-            <table width='100%' style='border-collapse:collapse; font-family:Arial, sans-serif; margin-bottom:6px;'>
-                <tr>
-                    <td style='width:30%; border:0.8px solid #000; padding:6px 8px;'>
-                        <table width='100%'>
-                            <tr>
-                                <td style='width:35%; text-align:left;'>
-                                    <img src='{$logoalcaldia}' style='height:40px'>
-                                </td>
-                                <td style='width:65%; text-align:left; color:#104e8c;
-                                            font-size:12px; font-weight:bold; line-height:1.4;'>
-                                    SANTA ANA NORTE<br>EL SALVADOR
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td style='width:70%; border:0.8px solid #000;
-                                padding:8px; text-align:center; vertical-align:middle;'>
-                        <h2 style='margin:0;'>Inventario de Materiales</h2>
-                        <p style='margin:0; font-size:12px;'>TALLER DE ESTRUCTURAS</p>
-                    </td>
-                </tr>
-            </table>
-        ";
+        <table width='100%' style='border-collapse:collapse; font-family:Arial, sans-serif; margin-bottom:6px;'>
+            <tr>
+                <td style='width:30%; border:0.8px solid #000; padding:6px 8px;'>
+                    <table width='100%'>
+                        <tr>
+                            <td style='width:35%; text-align:left;'>
+                                <img src='{$logoalcaldia}' style='height:40px'>
+                            </td>
+                            <td style='width:65%; text-align:left; color:#104e8c;
+                                        font-size:12px; font-weight:bold; line-height:1.4;'>
+                                SANTA ANA NORTE<br>EL SALVADOR
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td style='width:70%; border:0.8px solid #000;
+                            padding:8px; text-align:center; vertical-align:middle;'>
+                    <h2 style='margin:0;'>Inventario de Materiales</h2>
+                    <p style='margin:0; font-size:12px;'>TALLER DE ESTRUCTURAS</p>
+                </td>
+            </tr>
+        </table>";
 
             $tabla .= "<table width='100%' id='tablaFor'>
-                <tbody>";
+            <tbody>
+                <tr>
+                    <td style='font-weight:bold; width:13%; font-size:13px;'>Código</td>
+                    <td style='font-weight:bold; width:35%; font-size:13px;'>Material</td>
+                    <td style='font-weight:bold; width:10%; font-size:13px;'>Medida</td>
+                    <td style='font-weight:bold; width:13%; font-size:13px;'>Cantidad</td>
+                    <td style='font-weight:bold; width:16%; font-size:13px;'>Precio Unit.</td>
+                    <td style='font-weight:bold; width:16%; font-size:13px;'>Total ($)</td>
+                </tr>";
 
-            $tabla .= "<tr>
-                <td style='font-weight: bold; width: 15%; font-size: 13px'>Código</td>
-                <td style='font-weight: bold; width: 50%; font-size: 13px'>Material</td>
-                <td style='font-weight: bold; width: 15%; font-size: 13px'>Cantidad</td>
-            <tr>";
-
-                foreach ($lista as $info) {
-                    if($info->total > 0){
-                        $tabla .= "<tr>
-                        <td style='font-size: 12px'>$info->codigo</td>
-                        <td style='font-size: 12px'>$info->nombre</td>
-                        <td style='font-size: 12px'>$info->total</td>
-                    <tr>";
-                    }
+            foreach ($lista as $info) {
+                if($info->total > 0){
+                    $tabla .= "
+                <tr>
+                    <td style='font-size:12px;'>$info->codigo</td>
+                    <td style='font-size:12px;'>$info->nombre</td>
+                    <td style='font-size:12px;'>$info->medida</td>
+                    <td style='font-size:12px;'>$info->total</td>
+                    <td style='font-size:12px;'>$ $info->precioUnit</td>
+                    <td style='font-size:12px;'>$ $info->totalDinero</td>
+                </tr>";
                 }
+            }
+
+            // ── Gran total ──
+            $tabla .= "
+        <tr>
+            <td colspan='5' style='font-weight:bold; font-size:13px; text-align:right;
+                                    border-top:1.5px solid #000; padding-top:5px;'>
+                TOTAL GENERAL:
+            </td>
+            <td style='font-weight:bold; font-size:13px; border-top:1.5px solid #000;
+                        padding-top:5px;'>
+                $ $granTotalFmt
+            </td>
+        </tr>";
 
             $tabla .= "</tbody></table>";
 
@@ -415,6 +446,8 @@ class ReportesController extends Controller
                 ->whereIn('id', $pilaArrayId)
                 ->get();
 
+            $granTotal = 0;
+
             foreach ($listaProy as $dato){
                 array_push($resultsBloque, $dato);
 
@@ -424,14 +457,21 @@ class ReportesController extends Controller
                     $infoMate   = Materiales::where('id', $info->id_material)->first();
                     $infoMedida = UnidadMedida::where('id', $infoMate->id_medida)->first();
 
-                    $info->nombremate = $infoMate->nombre;
-                    $info->codigomate = $infoMate->codigo;
-                    $info->unimedida  = $infoMedida ? $infoMedida->nombre : '—';
+                    $totalLinea = $info->precio * $info->cantidad;
+                    $granTotal += $totalLinea;
+
+                    $info->nombremate  = $infoMate->nombre;
+                    $info->codigomate  = $infoMate->codigo;
+                    $info->unimedida   = $infoMedida ? $infoMedida->nombre : '—';
+                    $info->precioFmt   = number_format($info->precio, 2);
+                    $info->totalFmt    = number_format($totalLinea, 2);
                 }
 
                 $resultsBloque[$index]->detalle = $arrayEntradas;
                 $index++;
             }
+
+            $granTotalFmt = number_format($granTotal, 2);
 
             $mpdf = new \Mpdf\Mpdf(['tempDir' => sys_get_temp_dir(), 'format' => 'LETTER']);
             $mpdf->SetTitle('Inventario Materiales');
@@ -440,56 +480,78 @@ class ReportesController extends Controller
             $logoalcaldia = 'images/logo.png';
 
             $tabla = "
-            <table width='100%' style='border-collapse:collapse; font-family:Arial, sans-serif; margin-bottom:6px;'>
-                <tr>
-                    <td style='width:30%; border:0.8px solid #000; padding:6px 8px;'>
-                        <table width='100%'>
-                            <tr>
-                                <td style='width:35%; text-align:left;'>
-                                    <img src='{$logoalcaldia}' style='height:40px'>
-                                </td>
-                                <td style='width:65%; text-align:left; color:#104e8c;
-                                            font-size:12px; font-weight:bold; line-height:1.4;'>
-                                    SANTA ANA NORTE<br>EL SALVADOR
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td style='width:70%; border:0.8px solid #000;
-                                padding:8px; text-align:center; vertical-align:middle;'>
-                        <h2 style='margin:0;'>Inventario de Materiales</h2>
-                        <p style='margin:0; font-size:12px;'>TALLER DE ESTRUCTURAS</p>
-                    </td>
-                </tr>
-            </table>
-        ";
+        <table width='100%' style='border-collapse:collapse; font-family:Arial, sans-serif; margin-bottom:6px;'>
+            <tr>
+                <td style='width:30%; border:0.8px solid #000; padding:6px 8px;'>
+                    <table width='100%'>
+                        <tr>
+                            <td style='width:35%; text-align:left;'>
+                                <img src='{$logoalcaldia}' style='height:40px'>
+                            </td>
+                            <td style='width:65%; text-align:left; color:#104e8c;
+                                        font-size:12px; font-weight:bold; line-height:1.4;'>
+                                SANTA ANA NORTE<br>EL SALVADOR
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td style='width:70%; border:0.8px solid #000;
+                            padding:8px; text-align:center; vertical-align:middle;'>
+                    <h2 style='margin:0;'>Inventario de Materiales</h2>
+                    <p style='margin:0; font-size:12px;'>TALLER DE ESTRUCTURAS</p>
+                </td>
+            </tr>
+        </table>";
 
             foreach ($listaProy as $dd) {
 
                 $tabla .= "<table width='100%' id='tablaFor'><tbody>";
-                $tabla .= "<tr><td style='font-weight: bold'>Proyecto</td></tr>";
+                $tabla .= "<tr><td style='font-weight:bold;'>Proyecto</td></tr>";
                 $tabla .= "<tr><td>$dd->nombre</td></tr>";
                 $tabla .= "</tbody></table>";
 
-                $tabla .= "<table width='100%' id='tablaFor' style='margin-top: 20px'><tbody>";
-                $tabla .= "<tr>
-                <td style='font-weight: bold; width: 12%; font-size: 13px'>Código</td>
-                <td style='font-weight: bold; width: 12%; font-size: 13px'>Medida</td>
-                <td style='font-weight: bold; width: 20%; font-size: 13px'>Repuesto</td>
-                <td style='font-weight: bold; width: 14%; font-size: 13px'>Cantidad</td>
+                $tabla .= "<table width='100%' id='tablaFor' style='margin-top:20px;'><tbody>";
+                $tabla .= "
+            <tr>
+                <td style='font-weight:bold; width:13%; font-size:13px;'>Código</td>
+                <td style='font-weight:bold; width:12%; font-size:13px;'>Medida</td>
+                <td style='font-weight:bold; width:28%; font-size:13px;'>Material</td>
+                <td style='font-weight:bold; width:13%; font-size:13px;'>Cantidad</td>
+                <td style='font-weight:bold; width:16%; font-size:13px;'>Precio Unit.</td>
+                <td style='font-weight:bold; width:16%; font-size:13px;'>Total ($)</td>
             </tr>";
 
                 foreach ($dd->detalle as $gg) {
-                    $tabla .= "<tr>
-                    <td style='font-size: 12px'>$gg->codigomate</td>
-                    <td style='font-size: 12px'>$gg->unimedida</td>
-                    <td style='font-size: 12px'>$gg->nombremate</td>
-                    <td style='font-size: 12px'>$gg->cantidad</td>
+                    $tabla .= "
+                <tr>
+                    <td style='font-size:12px;'>$gg->codigomate</td>
+                    <td style='font-size:12px;'>$gg->unimedida</td>
+                    <td style='font-size:12px;'>$gg->nombremate</td>
+                    <td style='font-size:12px;'>$gg->cantidad</td>
+                    <td style='font-size:12px;'>$ $gg->precioFmt</td>
+                    <td style='font-size:12px;'>$ $gg->totalFmt</td>
                 </tr>";
                 }
 
-                $tabla .= "</tbody></table>";
+                $tabla .= "</tbody></table><br>";
             }
+
+            // ── Gran total al final ──
+            $tabla .= "
+        <table width='100%' style='margin-top:10px;'>
+            <tbody>
+                <tr>
+                    <td style='font-weight:bold; font-size:14px; text-align:right;
+                                border-top:2px solid #000; padding-top:6px;'>
+                        TOTAL GENERAL:&nbsp;&nbsp;
+                    </td>
+                    <td style='font-weight:bold; font-size:14px; width:18%;
+                                border-top:2px solid #000; padding-top:6px;'>
+                        $ $granTotalFmt
+                    </td>
+                </tr>
+            </tbody>
+        </table>";
 
             $stylesheet = file_get_contents('css/cssregistro.css');
             $mpdf->WriteHTML($stylesheet, 1);
@@ -1090,6 +1152,288 @@ class ReportesController extends Controller
     }
 
 
+    public function vistaQueHaEntradoProyecto(){
+
+        // necesito todos los proyectos, ya que solo es reporte
+        $proyectos = TipoProyecto::orderBy('nombre', 'ASC')->get();
+
+        return view('backend.admin.repuestos.reporte.vistaquehaentradoproyecto', compact('proyectos'));
+    }
+
+
+
+    public function pdfQueHaEntradoProyectos($idproy, $desde, $hasta, $tipo)
+    {
+        $infoProyecto = TipoProyecto::where('id', $idproy)->first();
+
+        $sinFecha = ($desde === 'null' || $desde === '' || $hasta === 'null' || $hasta === '');
+
+        $logoalcaldia = 'images/logo.png';
+
+        if (!$sinFecha) {
+            $start = Carbon::parse($desde)->startOfDay();
+            $end   = Carbon::parse($hasta)->endOfDay();
+
+            $desdeFormat = date("d-m-Y", strtotime($desde));
+            $hastaFormat = date("d-m-Y", strtotime($hasta));
+            $fechaLabel  = "Fecha: $desdeFormat  -  $hastaFormat";
+        } else {
+            $fechaLabel = "Todas las fechas";
+        }
+
+        $encabezado = "
+        <table width='100%' style='border-collapse:collapse; font-family:Arial, sans-serif; margin-bottom:6px;'>
+            <tr>
+                <td style='width:30%; border:0.8px solid #000; padding:6px 8px;'>
+                    <table width='100%'>
+                        <tr>
+                            <td style='width:35%; text-align:left;'>
+                                <img src='{$logoalcaldia}' style='height:40px'>
+                            </td>
+                            <td style='width:65%; text-align:left; color:#104e8c;
+                                        font-size:12px; font-weight:bold; line-height:1.4;'>
+                                SANTA ANA NORTE<br>EL SALVADOR
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td style='width:70%; border:0.8px solid #000;
+                            padding:8px; text-align:center; vertical-align:middle;'>
+                    <h2 style='margin:0;'>Reporte de Materiales Recibidos</h2>
+                    <p style='margin:0; font-size:12px;'>$fechaLabel</p>
+                </td>
+            </tr>
+        </table>
+    ";
+
+        // ─── TIPO 1: JUNTOS ────────────────────────────────────────────────────
+        if ($tipo == 1) {
+
+            $pilaArray = array();
+
+            $query = HistorialEntradas::where('id_tipoproyecto', $idproy);
+            if (!$sinFecha) {
+                $query->whereBetween('fecha', [$start, $end]);
+            }
+            $arrayHistoEntrada = $query->orderBy('fecha', 'ASC')->get();
+
+            foreach ($arrayHistoEntrada as $data) {
+                array_push($pilaArray, $data->id);
+            }
+
+            $dataArray = array();
+            $arrayEntradaDetalle = HistorialEntradasDeta::whereIn('id_historial', $pilaArray)->get();
+            $arrayMateriales = Materiales::all();
+
+            $granTotal = 0; // ← acumulador global
+
+            foreach ($arrayMateriales as $data) {
+
+                $infoMedida = UnidadMedida::where('id', $data->id_medida)->first();
+
+                $cantidad     = 0;
+                $totalMaterial = 0;
+                $precioUnitario = 0;
+
+                foreach ($arrayEntradaDetalle as $item) {
+                    if ($item->id_material == $data->id) {
+                        $cantidad       += $item->cantidad;
+                        $totalMaterial  += ($item->precio * $item->cantidad);
+                        $precioUnitario  = $item->precio; // último precio registrado
+                    }
+                }
+
+                if ($cantidad > 0) {
+                    $granTotal += $totalMaterial;
+                    $dataArray[] = [
+                        'nombre'         => $data->nombre,
+                        'codigo'         => $data->codigo,
+                        'cantidad'       => $cantidad,
+                        'precioUnitario' => number_format($precioUnitario, 2),
+                        'total'          => number_format($totalMaterial, 2),
+                        'medida'         => $infoMedida ? $infoMedida->nombre : '—',
+                    ];
+                }
+            }
+
+            usort($dataArray, function ($a, $b) {
+                return strcmp($a['nombre'], $b['nombre']);
+            });
+
+            $granTotalFmt = number_format($granTotal, 2);
+
+            $mpdf = new \Mpdf\Mpdf(['tempDir' => sys_get_temp_dir(), 'format' => 'LETTER']);
+            $mpdf->SetTitle('Reporte de Materiales Recibidos');
+            $mpdf->showImageErrors = false;
+
+            $tabla  = $encabezado;
+            $tabla .= "<p style='font-size:15px;'><span style='font-weight:bold;'>Proyecto:</span> {$infoProyecto->nombre}</p>";
+
+            $tabla .= "
+        <table width='100%' id='tablaFor'>
+            <tbody>
+                <tr>
+                    <td style='font-weight:bold; width:13%; font-size:13px;'>Código</td>
+                    <td style='font-weight:bold; width:35%; font-size:13px;'>Material</td>
+                    <td style='font-weight:bold; width:12%; font-size:13px;'>Medida</td>
+                    <td style='font-weight:bold; width:11%; font-size:13px;'>Cantidad</td>
+                    <td style='font-weight:bold; width:15%; font-size:13px;'>Precio Unit.</td>
+                    <td style='font-weight:bold; width:15%; font-size:13px;'>Total ($)</td>
+                </tr>";
+
+            foreach ($dataArray as $info) {
+                $tabla .= "
+            <tr>
+                <td style='font-size:12px;'>{$info['codigo']}</td>
+                <td style='text-align:left; font-size:12px;'>{$info['nombre']}</td>
+                <td style='font-size:12px;'>{$info['medida']}</td>
+                <td style='font-size:12px;'>{$info['cantidad']}</td>
+                <td style='font-size:12px;'>$ {$info['precioUnitario']}</td>
+                <td style='font-size:12px;'>$ {$info['total']}</td>
+            </tr>";
+            }
+
+            // ── Fila de gran total ──
+            $tabla .= "
+            <tr>
+                <td colspan='5' style='font-weight:bold; font-size:13px; text-align:right;
+                                        border-top:1.5px solid #000; padding-top:4px;'>
+                    TOTAL GENERAL:
+                </td>
+                <td style='font-weight:bold; font-size:13px; border-top:1.5px solid #000;
+                            padding-top:4px;'>
+                    $ $granTotalFmt
+                </td>
+            </tr>";
+
+            $tabla .= "</tbody></table>";
+
+            $stylesheet = file_get_contents('css/cssregistro.css');
+            $mpdf->WriteHTML($stylesheet, 1);
+            $mpdf->setFooter("Página: " . '{PAGENO}' . "/" . '{nb}');
+            $mpdf->WriteHTML($tabla, 2);
+            $mpdf->Output();
+
+        } else {
+            // ─── TIPO 2: SEPARADOS ─────────────────────────────────────────────
+
+            $query = HistorialEntradas::where('id_tipoproyecto', $idproy);
+            if (!$sinFecha) {
+                $query->whereBetween('fecha', [$start, $end]);
+            }
+            $arrayHistoEntrada = $query->orderBy('fecha', 'ASC')->get();
+
+            $resultsBloque = array();
+            $index = 0;
+            $granTotal = 0; // ← acumulador global
+
+            foreach ($arrayHistoEntrada as $data) {
+
+                array_push($resultsBloque, $data);
+
+                $data->fechaFormat = $data->fecha
+                    ? date("d-m-Y", strtotime($data->fecha))
+                    : 'Sin fecha';
+
+                $arrayDetalle = HistorialEntradasDeta::where('id_historial', $data->id)->get();
+
+                foreach ($arrayDetalle as $deta) {
+                    $infoMate = Materiales::where('id', $deta->id_material)->first();
+
+                    if (!$infoMate) continue;
+
+                    $infoMedida = UnidadMedida::where('id', $infoMate->id_medida)->first();
+
+                    $totalLinea = $deta->precio * $deta->cantidad;
+                    $granTotal += $totalLinea;
+
+                    $deta->nombremate    = $infoMate->nombre;
+                    $deta->codigomate    = $infoMate->codigo;
+                    $deta->unimedida     = $infoMedida ? $infoMedida->nombre : '—';
+                    $deta->precioUnitFmt = number_format($deta->precio, 2);
+                    $deta->totalFmt      = number_format($totalLinea, 2);
+                }
+
+                $resultsBloque[$index]->detalle = $arrayDetalle;
+                $index++;
+            }
+
+            $granTotalFmt = number_format($granTotal, 2);
+
+            $mpdf = new \Mpdf\Mpdf(['tempDir' => sys_get_temp_dir(), 'format' => 'LETTER']);
+            $mpdf->SetTitle('Reporte de Materiales Recibidos');
+            $mpdf->showImageErrors = false;
+
+            $tabla  = $encabezado;
+            $tabla .= "<p style='font-size:15px;'><span style='font-weight:bold;'>Proyecto:</span> {$infoProyecto->nombre}</p>";
+
+            foreach ($resultsBloque as $info) {
+
+                $tabla .= "
+            <table width='100%' id='tablaFor'>
+                <tbody>
+                    <tr>
+                        <td style='font-weight:bold; width:15%; font-size:13px;'>Fecha</td>
+                        <td style='font-weight:bold; width:85%; font-size:13px;'>Descripción</td>
+                    </tr>
+                    <tr>
+                        <td style='font-size:12px;'>{$info->fechaFormat}</td>
+                        <td style='font-size:12px;'>{$info->descripcion}</td>
+                    </tr>
+                </tbody>
+            </table>";
+
+                $tabla .= "
+            <table width='100%' id='tablaFor'>
+                <tbody>
+                    <tr>
+                        <td style='font-weight:bold; width:13%; font-size:13px;'>Código</td>
+                        <td style='font-weight:bold; width:12%; font-size:13px;'>Medida</td>
+                        <td style='font-weight:bold; width:30%; font-size:13px;'>Material</td>
+                        <td style='font-weight:bold; width:11%; font-size:13px;'>Cantidad</td>
+                        <td style='font-weight:bold; width:15%; font-size:13px;'>Precio Unit.</td>
+                        <td style='font-weight:bold; width:15%; font-size:13px;'>Total ($)</td>
+                    </tr>";
+
+                foreach ($info->detalle as $deta) {
+                    $tabla .= "
+                <tr>
+                    <td style='font-size:12px;'>{$deta->codigomate}</td>
+                    <td style='font-size:12px;'>{$deta->unimedida}</td>
+                    <td style='font-size:12px;'>{$deta->nombremate}</td>
+                    <td style='font-size:12px;'>{$deta->cantidad}</td>
+                    <td style='font-size:12px;'>$ {$deta->precioUnitFmt}</td>
+                    <td style='font-size:12px;'>$ {$deta->totalFmt}</td>
+                </tr>";
+                }
+
+                $tabla .= "</tbody></table><br>";
+            }
+
+            // ── Gran total al final del documento ──
+            $tabla .= "
+        <table width='100%' style='margin-top:10px;'>
+            <tbody>
+                <tr>
+                    <td style='font-weight:bold; font-size:14px; text-align:right;
+                                border-top:2px solid #000; padding-top:6px;'>
+                        TOTAL GENERAL:&nbsp;&nbsp;
+                    </td>
+                    <td style='font-weight:bold; font-size:14px; width:18%;
+                                border-top:2px solid #000; padding-top:6px;'>
+                        $ $granTotalFmt
+                    </td>
+                </tr>
+            </tbody>
+        </table>";
+
+            $stylesheet = file_get_contents('css/cssregistro.css');
+            $mpdf->WriteHTML($stylesheet, 1);
+            $mpdf->setFooter("Página: " . '{PAGENO}' . "/" . '{nb}');
+            $mpdf->WriteHTML($tabla, 2);
+            $mpdf->Output();
+        }
+    }
 
 
 

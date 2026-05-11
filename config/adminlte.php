@@ -416,6 +416,11 @@ return [
                     'route' => 'admin.reporte.inventario.index',
                 ],
                 [
+                    'text' => 'Entrada por Proyecto',
+                    'icon' => 'far fa-circle',
+                    'route' => 'admin.reporte.inventario.entradaproyecto.index',
+                ],
+                [
                     'text' => 'Salida por Proyecto',
                     'icon' => 'far fa-circle',
                     'route' => 'admin.reporte.inventario.salidaproyecto.index',
