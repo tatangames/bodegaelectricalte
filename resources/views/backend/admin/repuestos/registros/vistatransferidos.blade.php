@@ -170,92 +170,98 @@
             })
         }
 
-        function guardarTransferencia(){
 
-            var fecha = document.getElementById('fecha').value;
-            var descripc = document.getElementById('descripcion').value; // max 800
-            var idproyecto = document.getElementById('select-tipoproyecto').value;
+           function guardarTransferencia(){
 
-            var documento = document.getElementById('documento');
+               var fecha      = document.getElementById('fecha').value;
+               var descripc   = document.getElementById('descripcion').value;
+               var idproyecto = document.getElementById('select-tipoproyecto').value;
+               var documento  = document.getElementById('documento');
 
-            if(fecha === ''){
-                toastr.error('Fecha es requerida');
-            }
+               if(fecha === ''){
+                   toastr.error('Fecha es requerida');
+                   return;
+               }
 
-            if(descripc.length > 800){
-                toastr.error('Descripción máximo 800 caracteres');
-                return;
-            }
+               if(descripc.length > 800){
+                   toastr.error('Descripción máximo 800 caracteres');
+                   return;
+               }
 
-            if(idproyecto === ''){
-                toastr.error('Proyecto es requerido');
-                return;
-            }
+               if(idproyecto === ''){
+                   toastr.error('Proyecto es requerido');
+                   return;
+               }
 
-            if(documento.files && documento.files[0]){ // si trae doc
-                if (!documento.files[0].type.match('image/jpeg|image/jpeg|image/png|.pdf')){
-                    toastr.error('formato permitidos: .png .jpg .jpeg .pdf');
-                    return;
-                }
-            }
+               if(documento.files && documento.files[0]){
+                   if (!documento.files[0].type.match('image/jpeg|image/png|application/pdf')){
+                       toastr.error('Formatos permitidos: .png .jpg .jpeg .pdf');
+                       return;
+                   }
+               }
 
-            openLoading();
+               Swal.fire({
+                   title: '¿Cerrar Proyecto?',
+                   text: "El proyecto quedará marcado como cerrado.",
+                   icon: 'question',
+                   showCancelButton: true,
+                   confirmButtonColor: '#28a745',
+                   cancelButtonColor: '#d33',
+                   cancelButtonText: 'Cancelar',
+                   confirmButtonText: 'Sí, cerrar'
+               }).then((result) => {
+                   if (result.isConfirmed) {
 
-            let formData = new FormData();
-            formData.append('fecha', fecha);
-            formData.append('descripcion', descripc);
-            formData.append('idproyecto', idproyecto);
-            formData.append('documento', documento.files[0]);
+                       openLoading();
+
+                       let formData = new FormData();
+                       formData.append('fecha',       fecha);
+                       formData.append('descripcion', descripc);
+                       formData.append('idproyecto',  idproyecto);
+                       if(documento.files && documento.files[0]){
+                           formData.append('documento', documento.files[0]);
+                       }
+
+                       axios.post(urlAdmin+'/admin/generar/salida/transferencia', formData)
+                           .then((response) => {
+                               closeLoading();
+
+                               if(response.data.success === 1){
+                                   Swal.fire({
+                                       title: 'No Guardado',
+                                       text: "Este proyecto ya fue cerrado anteriormente.",
+                                       icon: 'info',
+                                       confirmButtonColor: '#28a745',
+                                       confirmButtonText: 'Aceptar'
+                                   });
+                               }
+                               else if(response.data.success === 3){
+                                   Swal.fire({
+                                       title: 'Cierre Exitoso',
+                                       text: "El proyecto ha sido cerrado correctamente.",
+                                       icon: 'success',
+                                       confirmButtonColor: '#28a745',
+                                       confirmButtonText: 'Aceptar',
+                                       allowOutsideClick: false,
+                                   }).then((result) => {
+                                       if (result.isConfirmed) {
+                                           window.location.reload();
+                                       }
+                                   });
+                               }
+                               else{
+                                   toastr.error('Error al guardar');
+                               }
+                           })
+                           .catch(() => {
+                               toastr.error('Error al guardar');
+                               closeLoading();
+                           });
+                   }
+               });
+           }
 
 
-            axios.post(urlAdmin+'/admin/generar/salida/transferencia', formData, {
-            })
-                .then((response) => {
-                    closeLoading();
-
-                    if(response.data.success === 1){
-                        Swal.fire({
-                            title: 'No Guardado',
-                            text: "Este Proyecto ya tiene 1 Transferencia",
-                            icon: 'info',
-                            showCancelButton: false,
-                            confirmButtonColor: '#28a745',
-                            confirmButtonText: 'Aceptar'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-
-                            }
-                        })
-                    }
-                    else if(response.data.success === 3){
-
-                        // TRANSFERENCIA CORRECTA
-                        toastr.success('Transferencia Correcta');
-
-
-                        Swal.fire({
-                            title: 'Transferencia Correcta',
-                            text: "Los materiales han sido agregados al Inventario General",
-                            icon: 'success',
-                            showCancelButton: false,
-                            confirmButtonColor: '#28a745',
-                            confirmButtonText: 'Aceptar',
-                            closeOnClickOutside: false,
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.reload()
-                            }
-                        })
-                    }
-                    else{
-                        toastr.error('Error al guardar');
-                    }
-                })
-                .catch((error) => {
-                    toastr.error('Error al guardar');
-                    closeLoading();
-                });
-        }
     </script>
 
 

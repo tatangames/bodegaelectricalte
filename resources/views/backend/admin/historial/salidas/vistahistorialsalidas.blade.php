@@ -98,7 +98,6 @@
                             <div class="col-md-6 d-flex align-items-end">
                                 <small class="text-muted">
                                     Filtra las salidas que contengan ese material en su detalle.
-                                    El <strong>ID</strong> de cada salida se muestra en la tabla.
                                 </small>
                             </div>
                         </div>
@@ -231,7 +230,7 @@
                 language: { noResults: function () { return 'No encontrado'; } },
                 templateResult: function (data) {
                     if (!data.id) return data.text;
-                    var cerrado = $(data.element).data('cerrado') === '1';
+                    var cerrado = $(data.element).data('cerrado') == '1';  // 👈
                     return $('<span class="d-flex align-items-center justify-content-between">')
                         .append($('<span>').text(data.text))
                         .append($('<span>')
@@ -241,7 +240,7 @@
                 },
                 templateSelection: function (data) {
                     if (!data.id) return data.text;
-                    var cerrado = $(data.element).data('cerrado') === '1';
+                    var cerrado = $(data.element).data('cerrado') == '1';  // 👈
                     return $('<span>')
                         .append($('<span>').text(data.text))
                         .append($('<span>')

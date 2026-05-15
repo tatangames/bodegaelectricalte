@@ -10,7 +10,6 @@ use App\Models\Salidas;
 use App\Models\SalidasDetalle;
 use App\Models\TipoProyecto;
 use App\Models\Transferencia;
-use App\Models\TransferenciaDetalle;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -99,19 +98,6 @@ class HistorialController extends Controller
         $idsDetalle = $entrada->detalle()->pluck('id');
 
         if ($idsDetalle->isNotEmpty()) {
-
-            // 1. IDs de transferencias afectadas
-            $idsTransferencia = TransferenciaDetalle::whereIn('id_entrada_detalle', $idsDetalle)
-                ->pluck('id_transferencia')
-                ->unique();
-
-            // 2. Borrar transferencia_detalle
-            TransferenciaDetalle::whereIn('id_entrada_detalle', $idsDetalle)->delete();
-
-            // 3. Borrar transferencias huérfanas
-            if ($idsTransferencia->isNotEmpty()) {
-                Transferencia::whereIn('id', $idsTransferencia)->delete();
-            }
 
             // 4. IDs de salidas afectadas ANTES de borrar sus detalles
             $idsSalidas = SalidasDetalle::whereIn('id_entrada_detalle', $idsDetalle)

@@ -11,5 +11,6 @@ class Transferencia extends Model
     protected $table = 'transferencia';
     public $timestamps = false;
 
-    protected $fillable = ['fecha', 'descripcion', 'id_tipoproyecto', 'documento', 'id_salida'];
+    protected $fillable = ['id_tipoproyecto', 'fecha', 'descripcion', 'documento'];
+
 }

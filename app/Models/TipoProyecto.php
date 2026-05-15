@@ -10,4 +10,8 @@ class TipoProyecto extends Model
     use HasFactory;
     protected $table = 'tipoproyecto';
     public $timestamps = false;
+
+    protected $casts = [
+        'transferido' => 'boolean',
+    ];
 }

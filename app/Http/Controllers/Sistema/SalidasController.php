@@ -5,16 +5,11 @@ namespace App\Http\Controllers\Sistema;
 use App\Http\Controllers\Controller;
 use App\Models\Entradas;
 use App\Models\EntradasDetalle;
-use App\Models\HistorialSalidas;
-use App\Models\HistorialSalidasDeta;
-use App\Models\HistorialTransferido;
-use App\Models\HistorialTransferidoDetalle;
 use App\Models\Materiales;
 use App\Models\Salidas;
 use App\Models\SalidasDetalle;
 use App\Models\TipoProyecto;
 use App\Models\Transferencia;
-use App\Models\TransferenciaDetalle;
 use App\Models\UnidadMedida;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -193,6 +188,12 @@ class SalidasController extends Controller
             return ['success' => 1];
         }
 
+        // ── Validar que el proyecto no esté cerrado ──
+        $proyecto = Tipoproyecto::find($request->proyecto);
+        if (!$proyecto || $proyecto->transferido == 1) {
+            return ['success' => 3]; // proyecto cerrado
+        }
+
         // ✅ Agrupar por id_entrada_detalle y sumar cantidades del mismo lote
         $agrupado = [];
         foreach ($contenedor as $item) {
@@ -294,8 +295,7 @@ class SalidasController extends Controller
     }
 
 
-
-    public function geenrarSalidaTransferencia(Request $request)
+    public function generarSalidaTransferencia(Request $request)
     {
         $rules = ['fecha' => 'required'];
 
@@ -308,12 +308,12 @@ class SalidasController extends Controller
 
         try {
 
-            // Evitar transferencia doble
+            // Evitar cierre doble
             if (TipoProyecto::where('id', $request->idproyecto)->where('transferido', 1)->first()) {
                 return ['success' => 1];
             }
 
-            // Marcar como transferido
+            // Marcar como cerrado
             TipoProyecto::where('id', $request->idproyecto)->update(['transferido' => 1]);
 
             // Manejar documento opcional
@@ -333,87 +333,13 @@ class SalidasController extends Controller
                 }
             }
 
-            // Obtener todas las filas de entradas_detalle con disponible > 0 para ese proyecto
-            $listado = DB::table('entradas_detalle as ed')
-                ->leftJoin(
-                    DB::raw('(
-                    SELECT id_entrada_detalle, SUM(cantidad_salida) as total_salido
-                    FROM salidas_detalle
-                    GROUP BY id_entrada_detalle
-                ) as sd'),
-                    'sd.id_entrada_detalle', '=', 'ed.id'
-                )
-                ->join('entradas as e', 'e.id', '=', 'ed.id_entradas')
-                ->where('e.id_tipoproyecto', $request->idproyecto)
-                ->selectRaw('
-                ed.id,
-                ed.id_material,
-                ed.precio,
-                (ed.cantidad_inicial - COALESCE(sd.total_salido, 0)) as disponible
-            ')
-                ->havingRaw('disponible > 0')
-                ->get();
-
-            if ($listado->isEmpty()) {
-                DB::rollback();
-                return ['success' => 2];
-            }
-
-            // Cabecera en salidas para descontar inventario del proyecto origen
-            $salidaTransf                   = new Salidas();
-            $salidaTransf->fecha = Carbon::parse($request->fecha);
-            $salidaTransf->descripcion      = $request->descripcion;
-            $salidaTransf->id_tipoproyecto  = $request->idproyecto;
-            $salidaTransf->es_transferencia = 1;
-            $salidaTransf->save();
-
-            // Cabecera transferencia
-            $transferencia                  = new Transferencia();
-            $transferencia->fecha           = $request->fecha;
-            $transferencia->descripcion     = $request->descripcion;
+            // Guardar registro de cierre
+            $transferencia              = new Transferencia();
             $transferencia->id_tipoproyecto = $request->idproyecto;
-            $transferencia->documento       = $nomDocumento;
+            $transferencia->fecha       = Carbon::parse($request->fecha);
+            $transferencia->descripcion = $request->descripcion;
+            $transferencia->documento   = $nomDocumento;
             $transferencia->save();
-
-            // Cabecera entrada en bodega general (id_tipoproyecto = 1)
-            $entrada                             = new Entradas();
-            $entrada->id_tipoproyecto            = 1;
-            $entrada->fecha = Carbon::parse($request->fecha);
-            $entrada->descripcion                = $request->descripcion;
-            $entrada->es_transferencia           = 1;
-            $entrada->id_tipoproyecto_transferencia = $request->idproyecto;
-            $entrada->save();
-
-
-
-            foreach ($listado as $fila) {
-
-                // Detalle transferencia
-                $detalle                          = new TransferenciaDetalle();
-                $detalle->id_transferencia        = $transferencia->id;
-                $detalle->id_entrada_detalle      = $fila->id;
-                $detalle->cantidad_transferencia  = $fila->disponible;
-                $detalle->id_tipoproyecto_destino = 1;
-                $detalle->save();
-
-                // Descontar del proyecto origen via salidas_detalle
-                $salida                     = new SalidasDetalle();
-                $salida->id_salida          = $salidaTransf->id;
-                $salida->id_entrada_detalle = $fila->id;
-                $salida->cantidad_salida    = $fila->disponible;
-                $salida->save();
-
-                $infoFilaMaterial = Materiales::where('id', $fila->id_material)->first();
-
-                // Reingresar a bodega general via entradas_detalle
-                $entradaDetalle                   = new EntradasDetalle();
-                $entradaDetalle->id_entradas      = $entrada->id;
-                $entradaDetalle->id_material      = $fila->id_material;
-                $entradaDetalle->cantidad_inicial = $fila->disponible;
-                $entradaDetalle->precio           = $fila->precio;
-                $entradaDetalle->nombre           = $infoFilaMaterial->nombre;
-                $entradaDetalle->save();
-            }
 
             DB::commit();
             return ['success' => 3];
@@ -424,6 +350,26 @@ class SalidasController extends Controller
             return ['success' => 99];
         }
     }
+
+
+    public function indexTransferenciasDeProyectosCerrados()
+    {
+        $proyectosCerrados = TipoProyecto::where('transferido', 1)
+            ->orderBy('nombre')
+            ->get();
+
+        return view('backend.admin.repuestos.transferenciacerrados.vistatransferenciamaterialcerrado', [
+            'proyectosCerrados' => $proyectosCerrados
+        ]);
+    }
+
+    public function retirarMaterialDeProyectosCerrados(Request $request)
+    {
+
+
+    }
+
+
 
 
 }

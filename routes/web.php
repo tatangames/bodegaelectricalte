@@ -53,11 +53,32 @@ Route::middleware('auth:admin')->group(function () {
 
 
     // --- UNIDAD DE MEDIDA ---
-    Route::get('/admin/unidadmedida/index', [ConfiguracionController::class,'index'])->name('admin.unidadmedida.index');
+    Route::get('/admin/unidadmedida/index', [ConfiguracionController::class,'indexUnidadMedida'])->name('admin.unidadmedida.index');
     Route::get('/admin/unidadmedida/tabla/index', [ConfiguracionController::class,'tablaUnidadMedida']);
     Route::post('/admin/unidadmedida/nuevo', [ConfiguracionController::class, 'nuevaUnidadMedida']);
     Route::post('/admin/unidadmedida/informacion', [ConfiguracionController::class, 'informacionUnidadMedida']);
     Route::post('/admin/unidadmedida/editar', [ConfiguracionController::class, 'editarUnidadMedida']);
+
+    // --- RUBRO ---
+    Route::get('/admin/rubro/index', [ConfiguracionController::class,'indexRubro'])->name('admin.rubro.index');
+    Route::get('/admin/rubro/tabla/index', [ConfiguracionController::class,'tablaRubro']);
+    Route::post('/admin/rubro/nuevo', [ConfiguracionController::class, 'nuevaRubro']);
+    Route::post('/admin/rubro/informacion', [ConfiguracionController::class, 'informacionRubro']);
+    Route::post('/admin/rubro/editar', [ConfiguracionController::class, 'editarRubro']);
+
+    // --- CUENTA ---
+    Route::get('/admin/cuenta/index', [ConfiguracionController::class, 'indexCuenta'])->name('admin.cuenta.index');
+    Route::get('/admin/cuenta/tabla/index', [ConfiguracionController::class, 'tablaCuenta']);
+    Route::post('/admin/cuenta/nuevo', [ConfiguracionController::class, 'nuevaCuenta']);
+    Route::post('/admin/cuenta/informacion', [ConfiguracionController::class, 'informacionCuenta']);
+    Route::post('/admin/cuenta/editar', [ConfiguracionController::class, 'editarCuenta']);
+
+    // --- OBJETO ESPECIFICO ---
+    Route::get('/admin/objetoespecifico/index', [ConfiguracionController::class, 'indexObjetoEspecifico'])->name('admin.objetoespecifico.index');
+    Route::get('/admin/objetoespecifico/tabla/index', [ConfiguracionController::class, 'tablaObjetoEspecifico']);
+    Route::post('/admin/objetoespecifico/nuevo', [ConfiguracionController::class, 'nuevaObjetoEspecifico']);
+    Route::post('/admin/objetoespecifico/informacion', [ConfiguracionController::class, 'informacionObjetoEspecifico']);
+    Route::post('/admin/objetoespecifico/editar', [ConfiguracionController::class, 'editarObjetoEspecifico']);
 
     // --- INVENTARIO ---
     Route::get('/admin/inventario/index', [RepuestosController::class,'index'])->name('admin.materiales.index');
@@ -90,8 +111,8 @@ Route::middleware('auth:admin')->group(function () {
 
 
     // --- TRANSFERENCIAS ---
-    Route::get('/admin/transferecias/a/huesera', [SalidasController::class,'indexTransferencias'])->name('admin.transferencias.index');
-    Route::post('/admin/generar/salida/transferencia',  [SalidasController::class,'geenrarSalidaTransferencia']);
+    Route::get('/admin/cierre/proyectos', [SalidasController::class,'indexTransferencias'])->name('admin.transferencias.index');
+    Route::post('/admin/generar/salida/transferencia',  [SalidasController::class,'generarSalidaTransferencia']);
 
 
     // --- HISTORIAL / ENTRADAS ---
@@ -116,8 +137,9 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/admin/historial/salidas/extras/{id}',      [HistorialController::class, 'vistaExtrasSalida'])->name('admin.historial.salidas.extras');
     Route::post('/admin/historial/salidas/extras/guardar',  [HistorialController::class, 'guardarExtrasSalida']);
 
-
-
+    // --- TRANSFERENCIA DE MATERIALES DE PROYECTOS CERRADOS ---
+    Route::get('/admin/transferencia/material/proyectoscerrados', [SalidasController::class,'indexTransferenciasDeProyectosCerrados'])->name('admin.transferencias.materiales.index');
+    Route::post('/admin/transferencia/material/xproyecto', [SalidasController::class,'retirarMaterialDeProyectosCerrados']);
 
 
 
@@ -125,10 +147,6 @@ Route::middleware('auth:admin')->group(function () {
     // --- REPORTES / ENTRADA Y SALIDAS ---
     Route::get('/admin/entrada/reporte/vista', [ReportesController::class,'indexEntradaReporte'])->name('admin.entrada.reporte.index');
     Route::get('admin/reporte/registro/{tipo}/{desde}/{hasta}', [ReportesController::class, 'reportePdfEntradaSalida']);
-
-
-
-
 
     // --- REPORTES / INVENTARIO ---
     Route::get('/admin/reporte/inventario', [ReportesController::class,'vistaParaReporteInventario'])->name('admin.reporte.inventario.index');

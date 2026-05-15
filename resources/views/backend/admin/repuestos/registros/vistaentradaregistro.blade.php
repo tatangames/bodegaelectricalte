@@ -170,19 +170,20 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group">
-                                    <label class="control-label">Código</label>
-                                    <div class="col-md-6">
-                                        <input type="text" id="codigo" maxlength="100" class='form-control' autocomplete="off" placeholder="">
-                                    </div>
-                                </div>
-
                                 <div class="form-group col-md-4" style="margin-top: 5px">
                                     <label class="control-label" style="color: #686868">Precio (4 decimales máximo): <span style="color: red">*</span></label>
                                     <div>
                                         <input type="number" min="0" max="1000000" autocomplete="off" value="0" class="form-control" id="precio-producto" placeholder="0.00">
                                     </div>
                                 </div>
+
+                                <div class="form-group">
+                                    <label class="control-label">Detalle (Opcional)</label>
+                                    <div class="col-md-6">
+                                        <input type="text" id="codigo" maxlength="100" class='form-control' autocomplete="off" placeholder="">
+                                    </div>
+                                </div>
+
 
                             </div>
                         </form>
@@ -219,7 +220,7 @@
                                     <th style="width: 9%">#</th>
                                     <th style="width: 40%">Descripción</th>
                                     <th style="width: 12%">Cantidad</th>
-                                    <th style="width: 14%">Código</th>
+                                    <th style="width: 14%">Detalle</th>
                                     <th style="width: 14%">Precio</th>
                                     <th style="width: 16%">Opciones</th>
                                 </tr>
@@ -581,7 +582,11 @@
                     if(response.data.success === 1){
                         toastr.success('Registrado correctamente');
                         limpiar();
-                    } else {
+                    }
+                    else if(response.data.success === 2){
+                        toastr.error('Proyecto ya esta Cerrado');
+                    }
+                    else {
                         toastr.error('error al guardar');
                     }
                 })

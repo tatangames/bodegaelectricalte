@@ -11,14 +11,6 @@
                                 <th style="width: 18%">Tipo de Proyecto</th>
                                 <th style="width: 10%">Fecha</th>
                                 <th style="width: 22%">Descripción</th>
-                                <th style="width: 8%">
-                                    Transferencia
-                                    <span data-toggle="tooltip"
-                                          data-placement="top"
-                                          title="Indica si esta salida fue generada por una transferencia entre proyectos">
-                                        <i class="fas fa-question-circle text-info" style="cursor:pointer"></i>
-                                    </span>
-                                </th>
                                 <th style="width: 7%">Estado</th>
                                 <th style="width: 25%">Opciones</th>
                             </tr>
@@ -33,13 +25,6 @@
                                     <td>{{ $dato->tipoproyecto->nombre ?? '' }}</td>
                                     <td>{{ $dato->fecha_fmt }}</td>
                                     <td>{{ $dato->descripcion ?? '' }}</td>
-                                    <td class="text-center">
-                                        @if($dato->es_transferencia)
-                                            <span class="badge badge-info">Sí</span>
-                                        @else
-                                            <span class="badge badge-secondary">No</span>
-                                        @endif
-                                    </td>
                                     <td class="text-center">
                                         @if($cerrado)
                                             <span class="badge badge-danger">Cerrado</span>

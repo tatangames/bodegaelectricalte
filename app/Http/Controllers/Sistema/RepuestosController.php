@@ -10,6 +10,7 @@ use App\Models\HistoHerramientaDescartada;
 use App\Models\HistorialEntradas;
 use App\Models\HistorialEntradasDeta;
 use App\Models\Materiales;
+use App\Models\ObjetoEspecifico;
 use App\Models\SalidasDetalle;
 use App\Models\TipoProyecto;
 use App\Models\UnidadMedida;
@@ -23,95 +24,106 @@ use Illuminate\Support\Facades\Validator;
 class RepuestosController extends Controller
 {
 
-    public function index(){
-        $lUnidad = UnidadMedida::orderBy('nombre', 'ASC')->get();
-        return view('backend.admin.inventario.vistainventario', compact('lUnidad'));
+    public function index()
+    {
+        $lUnidad           = UnidadMedida::orderBy('nombre', 'ASC')->get();
+        $lObjetoEspecifico = ObjetoEspecifico::with('cuenta')
+            ->orderBy('nombre', 'ASC')->get();
+
+        return view('backend.admin.inventario.vistainventario',
+            compact('lUnidad', 'lObjetoEspecifico'));
     }
 
-    public function tablaMateriales(){
+    public function tablaMateriales()
+    {
+        $filtro = request('filtro', 'todos'); // 'todos' | 'sin_objeto'
 
-        $lista = Materiales::orderBy('nombre', 'ASC')->get();
+        $query = Materiales::with('objetoEspecifico')
+            ->orderBy('nombre', 'ASC');
+
+        if ($filtro === 'sin_objeto') {
+            $query->whereNull('id_objespecifico');
+        }
+
+        $lista = $query->get();
 
         foreach ($lista as $item) {
-
-            // Unidad de medida
             $medida = '';
-            if($dataUnidad = UnidadMedida::where('id', $item->id_medida)->first()){
+            if ($dataUnidad = UnidadMedida::where('id', $item->id_medida)->first()) {
                 $medida = $dataUnidad->nombre;
             }
             $item->medida = $medida;
 
-            // STOCK REAL = entradas - salidas
             $entradas = DB::table('entradas_detalle')
-                ->where('id_material', $item->id)  // 👈 id_material
+                ->where('id_material', $item->id)
                 ->sum('cantidad_inicial');
 
             $salidas = DB::table('salidas_detalle as sd')
-                ->join('entradas_detalle as ed', 'ed.id', '=', 'sd.id_entrada_detalle')  // 👈 id_entrada_detalle
-                ->where('ed.id_material', $item->id)  // 👈 id_material
+                ->join('entradas_detalle as ed', 'ed.id', '=', 'sd.id_entrada_detalle')
+                ->where('ed.id_material', $item->id)
                 ->sum('sd.cantidad_salida');
 
             $item->total    = $entradas - $salidas;
             $item->entradas = $entradas;
             $item->salidas  = $salidas;
+
+            // Relación ya cargada con with()
+            $item->objeto_especifico = $item->objetoEspecifico;
         }
 
         return view('backend.admin.inventario.tablainventario', compact('lista'));
     }
 
-    public function nuevoMaterial(Request $request){
-
-        $regla = array(
-            'nombre' => 'required',
-        );
-
-        $validar = Validator::make($request->all(), $regla);
-
-        if ($validar->fails()){ return ['success' => 0];}
+    public function nuevoMaterial(Request $request)
+    {
+        $validar = Validator::make($request->all(), [
+            'nombre'           => 'required',
+            'id_objespecifico' => 'required|exists:objeto_especifico,id',
+        ]);
+        if ($validar->fails()) { return ['success' => 0]; }
 
         $dato = new Materiales();
-        $dato->id_medida = $request->unidad;
-        $dato->nombre = $request->nombre;
+        $dato->nombre           = $request->nombre;
+        $dato->id_medida        = $request->unidad ?: null;
+        $dato->id_objespecifico = $request->id_objespecifico;
 
-        if($dato->save()){
-            return ['success' => 1];
-        }else{
-            return ['success' => 2];
-        }
+        return $dato->save() ? ['success' => 1] : ['success' => 2];
     }
 
-    public function informacionMaterial(Request $request){
-        $regla = array(
-            'id' => 'required',
-        );
+    public function informacionMaterial(Request $request)
+    {
+        $validar = Validator::make($request->all(), ['id' => 'required']);
+        if ($validar->fails()) { return ['success' => 0]; }
 
-        $validar = Validator::make($request->all(), $regla);
+        if ($lista = Materiales::where('id', $request->id)->first()) {
+            $arrayUnidad         = UnidadMedida::orderBy('nombre', 'ASC')->get();
+            $arrayObjetoEspecifico = ObjetoEspecifico::with('cuenta.rubro')
+                ->orderBy('nombre', 'ASC')->get();
 
-        if ($validar->fails()){ return ['success' => 0];}
-
-        if($lista = Materiales::where('id', $request->id)->first()){
-
-            $arrayUnidad = UnidadMedida::orderBy('nombre', 'ASC')->get();
-
-            return ['success' => 1, 'material' => $lista, 'unidad' => $arrayUnidad];
-        }else{
-            return ['success' => 2];
+            return [
+                'success'           => 1,
+                'material'          => $lista,
+                'unidad'            => $arrayUnidad,
+                'objeto_especifico' => $arrayObjetoEspecifico,
+            ];
         }
+
+        return ['success' => 2];
     }
 
-    public function editarMaterial(Request $request){
-
-        $regla = array(
-            'nombre' => 'required',
-        );
-
-        $validar = Validator::make($request->all(), $regla);
-
-        if ($validar->fails()){ return ['success' => 0];}
+    public function editarMaterial(Request $request)
+    {
+        $validar = Validator::make($request->all(), [
+            'id'               => 'required',
+            'nombre'           => 'required',
+            'id_objespecifico' => 'required|exists:objeto_especifico,id',
+        ]);
+        if ($validar->fails()) { return ['success' => 0]; }
 
         Materiales::where('id', $request->id)->update([
-            'id_medida' => $request->unidad,
-            'nombre' => $request->nombre,
+            'id_medida'        => $request->unidad ?: null,
+            'id_objespecifico' => $request->id_objespecifico,
+            'nombre'           => $request->nombre,
         ]);
 
         return ['success' => 1];
@@ -267,6 +279,12 @@ class RepuestosController extends Controller
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             return ['success' => 0];
+        }
+
+        // ── Validar que el proyecto no esté cerrado ──
+        $proyecto = Tipoproyecto::find($request->tipoproyecto);
+        if (!$proyecto || $proyecto->transferido == 1) {
+            return ['success' => 2]; // proyecto cerrado o no existe
         }
 
         DB::beginTransaction();

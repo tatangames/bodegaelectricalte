@@ -28,4 +28,6 @@ class Salidas extends Model
         //         'id_salida'           → FK en la tabla de detalles
         //         'id'                  → PK en la tabla salidas
     }
+
+
 }

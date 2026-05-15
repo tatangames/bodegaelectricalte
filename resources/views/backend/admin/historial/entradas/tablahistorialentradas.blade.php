@@ -12,8 +12,6 @@
                                 <th style="width: 10%">Fecha</th>
                                 <th style="width: 8%">Factura</th>
                                 <th style="width: 18%">Descripción</th>
-                                <th style="width: 8%">Transferencia</th>
-                                <th style="width: 10%">Proyecto Destino</th>
                                 <th style="width: 7%">Estado</th>
                                 <th style="width: 18%">Opciones</th>
                             </tr>
@@ -27,14 +25,6 @@
                                     <td>{{ $dato->fecha_fmt }}</td>
                                     <td>{{ $dato->factura ?? '' }}</td>
                                     <td>{{ $dato->descripcion ?? '' }}</td>
-                                    <td class="text-center">
-                                        @if($dato->es_transferencia)
-                                            <span class="badge badge-info">Sí</span>
-                                        @else
-                                            <span class="badge badge-secondary">No</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $dato->tipoproyectoTransferencia->nombre ?? '' }}</td>
                                     <td class="text-center">
                                         @if($cerrado)
                                             <span class="badge badge-danger">Cerrado</span>

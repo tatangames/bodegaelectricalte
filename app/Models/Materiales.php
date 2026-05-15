@@ -16,5 +16,8 @@ class Materiales extends Model
         return $this->belongsTo(UnidadMedida::class, 'id_medida');
     }
 
-
+    public function objetoEspecifico()
+    {
+        return $this->belongsTo(ObjetoEspecifico::class, 'id_objespecifico');
+    }
 }

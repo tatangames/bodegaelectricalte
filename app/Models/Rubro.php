@@ -5,9 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TransferenciaDetalle extends Model
+class Rubro extends Model
 {
     use HasFactory;
-    protected $table = 'transferencia_detalle';
+    protected $table = 'rubro';
     public $timestamps = false;
+    protected $fillable = ['codigo', 'nombre'];
 }
