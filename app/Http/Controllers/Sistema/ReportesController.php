@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sistema;
 use App\Http\Controllers\Controller;
 use App\Models\Entradas;
 use App\Models\EntradasDetalle;
+use App\Models\InformacionGeneral;
 use App\Models\Materiales;
 use App\Models\Salidas;
 use App\Models\SalidasDetalle;
@@ -521,60 +522,69 @@ class ReportesController extends Controller
         $fechaGenerado = date("d-m-Y");
         $logoalcaldia  = 'images/logo.png';
 
-        // ── Buscar el registro de cierre (snapshot) ───────────────────────
         $transferencia = Transferencia::where('id_tipoproyecto', $idtrans)
             ->orderBy('id', 'desc')
             ->first();
 
         if (!$transferencia) {
-            // Si no hay snapshot aún, mostrar PDF con aviso
-            $mpdf = new \Mpdf\Mpdf(['tempDir' => sys_get_temp_dir(), 'format' => 'LETTER']);
+            $mpdf = new \Mpdf\Mpdf(['tempDir' => sys_get_temp_dir(), 'format' => 'LETTER-L']);
             $mpdf->WriteHTML("<p style='font-family:Arial; font-size:14px; color:red;'>
-            Este proyecto no tiene registro de cierre generado.</p>", 2);
+        Este proyecto no tiene registro de cierre generado.</p>", 2);
             $mpdf->Output();
             return;
         }
 
         $fechaCierre = date("d-m-Y", strtotime($transferencia->fecha));
 
-        // ── Leer snapshot de transferencia_detalle ────────────────────────
         $detallesSnapshot = TransferenciaDetalle::where('id_transferencia', $transferencia->id)
             ->get();
 
-        // Agrupar por nombre_material (ya es snapshot, no necesita joins complejos)
         $porMaterial = [];
 
         foreach ($detallesSnapshot as $det) {
             $key = $det->nombre_material ?? 'SIN NOMBRE';
 
             if (!isset($porMaterial[$key])) {
-                // Obtener medida y código desde entradas_detalle → material
-                $entradaDet = EntradasDetalle::with('material.unidadMedida')
+                $entradaDet = EntradasDetalle::with('material.unidadMedida', 'material.objetoEspecifico')
                     ->find($det->id_entrada_detalle);
 
+                // ── Cantidad adquirida (del registro original de entrada) ──
+                $cantAdquirida = $entradaDet?->cantidad_inicial ?? 0;
+
+                // ── Cantidad utilizada = total salidas de ese detalle en este proyecto ──
+                $cantUtilizada = \App\Models\SalidasDetalle::where('id_entrada_detalle', $det->id_entrada_detalle)
+                    ->whereHas('salida', function ($q) use ($idtrans) {
+                        $q->where('id_tipoproyecto', $idtrans)
+                            ->where('es_transferencia', false);
+                    })
+                    ->sum('cantidad_salida');
+
                 $porMaterial[$key] = [
-                    'nombre'           => $entradaDet?->material?->nombre ?? '—',
+                    'nombre'           => $entradaDet?->material?->nombre ?? $det->nombre_material ?? '—',
                     'medida'           => $entradaDet?->material?->unidadMedida?->nombre ?? '—',
-                    'codigo'           => $entradaDet?->material?->codigo ?? '—',
-                    'cantidad_cierre'  => 0,   // stock al momento del cierre
+                    'codigo'           => $entradaDet?->material?->objetoEspecifico?->codigo ?? '—',
+                    'cant_adquirida'   => $cantAdquirida,
+                    'cant_utilizada'   => $cantUtilizada,
+                    'cantidad_cierre'  => 0,
                     'precio'           => $det->precio,
+                    'estado'           => '—',      // Si lo guardas en BD, jalarlo aquí
+                    'observaciones'    => '—',
                 ];
             }
 
             $porMaterial[$key]['cantidad_cierre'] += $det->cantidad_sobrante;
         }
 
-        // Filtrar si por alguna razón quedó en 0
         $porMaterial = array_filter($porMaterial, fn($m) => $m['cantidad_cierre'] > 0);
-
         usort($porMaterial, fn($a, $b) => strcmp($a['nombre'], $b['nombre']));
 
         $granTotal = 0;
 
-        $mpdf = new \Mpdf\Mpdf(['tempDir' => sys_get_temp_dir(), 'format' => 'LETTER']);
-        $mpdf->SetTitle('Reporte de Proyecto Completado');
+        $mpdf = new \Mpdf\Mpdf(['tempDir' => sys_get_temp_dir(), 'format' => 'LETTER-L']);
+        $mpdf->SetTitle('Reporte GEAD-001-INFO');
         $mpdf->showImageErrors = false;
 
+        // ── Encabezado ────────────────────────────────────────────────────
         $tabla = "
 <table width='100%' style='border-collapse:collapse; font-family:Arial, sans-serif; margin-bottom:6px;'>
     <tr>
@@ -591,92 +601,114 @@ class ReportesController extends Controller
                 </tr>
             </table>
         </td>
-        <td style='width:70%; border:0.8px solid #000;
+        <td style='width:40%; border:0.8px solid #000;
                     padding:8px; text-align:center; vertical-align:middle;'>
-            <h2 style='margin:0; font-size:15px;'>Reporte de Proyecto Completado</h2>
-            <p style='margin:0; font-size:12px;'>Generado: $fechaGenerado</p>
+            <h2 style='margin:0; font-size:14px;'>Informe de Inventario Físico de<br>Materiales Sobrantes</h2>
+            <p style='margin:2px 0 0; font-size:11px; color:#555;'>GEAD-001-INFO</p>
+        </td>
+        <td style='width:30%; border:0.8px solid #000; padding:6px 8px; font-size:11px;'>
+            <b>Fecha de generación:</b> $fechaGenerado<br>
+            <b>Fecha de cierre:</b> $fechaCierre
         </td>
     </tr>
 </table>";
 
+        // ── Info proyecto ─────────────────────────────────────────────────
         $tabla .= "
-<table width='100%' style='margin-bottom:4px;'>
-    <tbody>
-        <tr>
-            <td style='font-size:15px;'>
-                <span style='font-weight:bold;'>Proyecto:</span> {$infoProyecto->nombre}
-            </td>
-            <td style='font-size:13px; text-align:right;'>
-                <span style='font-weight:bold;'>Fecha de Cierre:</span> $fechaCierre
-            </td>
-        </tr>
-    </tbody>
+<table width='100%' style='margin-bottom:4px; border-collapse:collapse;'>
+    <tr>
+        <td style='font-size:13px; padding:4px 0;'>
+            <span style='font-weight:bold;'>Proyecto:</span> {$infoProyecto->nombre}
+        </td>
+    </tr>
 </table>";
 
-        // ── Nota informativa ──────────────────────────────────────────────
-        $tabla .= "
-<table width='100%' style='margin-bottom:6px;'>
-    <tbody>
-        <tr>
-            <td style='
-                background-color:#e9e9e9;
-                border:1px solid #aaaaaa;
-                color:#444444;
-                font-size:11px;
-                font-weight:bold;
-                padding:4px 8px;
-            '>
-                Este reporte muestra el inventario sobrante registrado
-                al momento del cierre del proyecto. Los movimientos posteriores
-                al cierre no afectan este reporte.
-            </td>
-        </tr>
-    </tbody>
-</table>";
+        // ── Tabla de materiales ───────────────────────────────────────────
+        $thStyle = "font-weight:bold; font-size:11px; border:0.8px solid #000;
+                padding:5px 4px; background:#d9e1f2; text-align:center;";
+        $tdStyle = "font-size:11px; border:0.8px solid #000; padding:4px;";
+        $tdC     = $tdStyle . " text-align:center;";
+        $tdR     = $tdStyle . " text-align:right;";
 
         $tabla .= "
-<table width='100%' id='tablaFor'>
-    <tbody>
+<table width='100%' style='border-collapse:collapse;'>
+    <thead>
         <tr>
-            <td style='font-weight:bold; width:13%; font-size:13px;'>Marca</td>
-            <td style='font-weight:bold; width:35%; font-size:13px;'>Material</td>
-            <td style='font-weight:bold; width:12%; font-size:13px;'>Medida</td>
-            <td style='font-weight:bold; width:13%; font-size:13px;'>Cant. al Cierre</td>
-            <td style='font-weight:bold; width:13%; font-size:13px;'>Precio Unit.</td>
-            <td style='font-weight:bold; width:14%; font-size:13px;'>Total ($)</td>
-        </tr>";
+            <th style='{$thStyle} width:8%;'>Obj.<br>Espec.</th>
+            <th style='{$thStyle} width:28%;'>Material</th>
+            <th style='{$thStyle} width:8%;'>Medida</th>
+            <th style='{$thStyle} width:9%;'>Cant.<br>Adquirida</th>
+            <th style='{$thStyle} width:9%;'>Cant.<br>Utilizada</th>
+            <th style='{$thStyle} width:9%;'>Cant.<br>Sobrante</th>
+            <th style='{$thStyle} width:10%;'>Precio<br>Unit.</th>
+            <th style='{$thStyle} width:10%;'>Total ($)</th>
+            <th style='{$thStyle} width:9%;'>Estado</th>
+        </tr>
+    </thead>
+    <tbody>";
 
         foreach ($porMaterial as $mat) {
             $totalLinea = $mat['cantidad_cierre'] * $mat['precio'];
             $granTotal += $totalLinea;
 
-            $precioFmt = number_format($mat['precio'], 4);
-            $totalFmt  = number_format($totalLinea, 4);
+            $precioFmt = '$ ' . number_format($mat['precio'], 4);
+            $totalFmt  = '$ ' . number_format($totalLinea, 4);
 
             $tabla .= "
         <tr>
-            <td style='font-size:12px;'>{$mat['codigo']}</td>
-            <td style='font-size:12px;'>{$mat['nombre']}</td>
-            <td style='font-size:12px;'>{$mat['medida']}</td>
-            <td style='font-size:12px; font-weight:bold;'>{$mat['cantidad_cierre']}</td>
-            <td style='font-size:12px;'>$ $precioFmt</td>
-            <td style='font-size:12px;'>$ $totalFmt</td>
+            <td style='{$tdC}'>{$mat['codigo']}</td>
+            <td style='{$tdStyle}'>{$mat['nombre']}</td>
+            <td style='{$tdC}'>{$mat['medida']}</td>
+            <td style='{$tdC}'>{$mat['cant_adquirida']}</td>
+            <td style='{$tdC}'>{$mat['cant_utilizada']}</td>
+            <td style='{$tdC} font-weight:bold;'>{$mat['cantidad_cierre']}</td>
+            <td style='{$tdR}'>{$precioFmt}</td>
+            <td style='{$tdR}'>{$totalFmt}</td>
+            <td style='{$tdC}'>{$mat['estado']}</td>
         </tr>";
         }
 
-        $granTotalFmt = number_format($granTotal, 4);
+        $granTotalFmt = '$ ' . number_format($granTotal, 4);
 
         $tabla .= "
         <tr>
-            <td colspan='5' style='font-weight:bold; font-size:13px; text-align:right;
-                                    border-top:1.5px solid #000; padding-top:4px;'>
+            <td colspan='7' style='font-weight:bold; font-size:12px; text-align:right;
+                                    border-top:1.5px solid #000; border:0.8px solid #000;
+                                    padding:5px 4px;'>
                 TOTAL GENERAL:
             </td>
-            <td style='font-weight:bold; font-size:13px; border-top:1.5px solid #000; padding-top:4px;'>
-                $ $granTotalFmt
+            <td colspan='2' style='font-weight:bold; font-size:12px;
+                                    border-top:1.5px solid #000; border:0.8px solid #000;
+                                    padding:5px 4px;'>
+                {$granTotalFmt}
             </td>
         </tr>
     </tbody>
+</table>";
+
+        $informacionGeneral = InformacionGeneral::where('id', 1)->first();
+
+        // ── Sección de firmas ─────────────────────────────────────────────
+       $firmaStyle = "width:33%; text-align:center; font-size:11px; padding-top:{$informacionGeneral->px_sobrantes}px;";
+        $tabla .= "
+<table width='100%' style='margin-top:30px; border-collapse:collapse;'>
+    <tr>
+        <td style='{$firmaStyle}'>
+            <div style='border-top:0.8px solid #000; padding-top:4px;'>
+                Responsable de Ejecución
+            </div>
+        </td>
+        <td style='{$firmaStyle}'>
+            <div style='border-top:0.8px solid #000; padding-top:4px;'>
+                Supervisor / Jefe Inmediato
+            </div>
+        </td>
+        <td style='{$firmaStyle}'>
+            <div style='border-top:0.8px solid #000; padding-top:4px;'>
+                Bodeguero / Responsable Asignado
+            </div>
+        </td>
+    </tr>
 </table>";
 
         $stylesheet = file_get_contents('css/cssregistro.css');
