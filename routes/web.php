@@ -157,16 +157,14 @@ Route::middleware('auth:admin')->group(function () {
         [ReportesController::class, 'formSolicitudPreview'])
         ->name('reporte.form.solicitud.preview');
 
-
-
+    Route::post('/admin/reporte/form003/solicitud/preview',
+        [ReportesController::class, 'form003SolicitudPreview'])
+        ->name('reporte.form003.solicitud.preview');
 
     Route::post('/admin/reporte/acta/preview',
         [ReportesController::class, 'actaRecepcionPreview'])
         ->name('reporte.acta.preview');
 
-    Route::get('/admin/reporte/acta/recepcion/{id_salida}',
-        [ReportesController::class, 'actaRecepcionPorSalida'])
-        ->name('reporte.acta.recepcion');
 
 
 

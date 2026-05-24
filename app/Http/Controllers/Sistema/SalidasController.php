@@ -401,6 +401,7 @@ class SalidasController extends Controller
         ]);
     }
 
+
     public function retirarMaterialDeProyectosCerrados(Request $request)
     {
         $rules = [
@@ -418,8 +419,8 @@ class SalidasController extends Controller
         DB::beginTransaction();
 
         try {
-            $contenedor     = json_decode($request->contenedorArray, true);
-            $tipodestino    = $request->tipo_destino;
+            $contenedor      = json_decode($request->contenedorArray, true);
+            $tipodestino     = $request->tipo_destino;
             $proyectoCerrado = $request->proyecto_cerrado;
             $proyectoDestino = $request->proyecto_destino;
 
@@ -427,20 +428,33 @@ class SalidasController extends Controller
                 return ['success' => 1];
             }
 
+            // Datos del acta comunes
+            $actaNumero        = $request->acta_numero        ?? null;
+            $actaReferencia    = $request->acta_referencia    ?? null;
+            $actaIdDepto       = $request->acta_id_departamento ? (int)$request->acta_id_departamento : null;
+            $actaNombreSolic   = $request->acta_nombre_solic  ?? null;
+            $actaCargoSolic    = $request->acta_cargo_solic   ?? null;
+            $actaObservaciones = $request->acta_observaciones ?? null;
+            $actaTipoDestino   = $request->acta_tipo_destino  ?? null;
+
             // ── TIPO: TRANSFERENCIA A PROYECTO ACTIVO ─────────────────────
             if ($tipodestino === 'proyecto') {
 
-                // Cabecera salida del proyecto cerrado
                 $salida                                = new Salidas();
                 $salida->fecha                         = Carbon::parse($request->fecha);
                 $salida->descripcion                   = $request->descripcion;
                 $salida->id_tipoproyecto               = $proyectoCerrado;
                 $salida->es_transferencia              = 1;
-                $salida->id_tipoproyecto_transferencia = $proyectoDestino; // ← destino guardado
-
+                $salida->id_tipoproyecto_transferencia = $proyectoDestino;
+                $salida->acta_numero                   = $actaNumero;
+                $salida->acta_referencia               = $actaReferencia;
+                $salida->acta_id_departamento          = $actaIdDepto;
+                $salida->acta_nombre_solic             = $actaNombreSolic;
+                $salida->acta_cargo_solic              = $actaCargoSolic;
+                $salida->acta_observaciones            = $actaObservaciones;
+                $salida->acta_tipo_destino             = $actaTipoDestino;
                 $salida->save();
 
-                // Cabecera entrada al proyecto destino
                 $entrada                                = new Entradas();
                 $entrada->id_tipoproyecto               = $proyectoDestino;
                 $entrada->fecha                         = Carbon::parse($request->fecha);
@@ -453,7 +467,6 @@ class SalidasController extends Controller
                     $idEntradaDetalle = $item['infoIdEntradaDeta'];
                     $cantidad         = (int) $item['infoCantidad'];
 
-                    // Verificar disponible libre (descontando reservas)
                     $entradaDetalle = EntradasDetalle::find($idEntradaDetalle);
                     if (!$entradaDetalle) {
                         DB::rollback();
@@ -467,21 +480,19 @@ class SalidasController extends Controller
                     if ($cantidad > $libre) {
                         DB::rollback();
                         return [
-                            'success'          => 3,
-                            'nombre_material'  => $entradaDetalle->material->nombre,
-                            'cantidad_pedida'  => $cantidad,
-                            'disponible'       => $libre,
+                            'success'         => 3,
+                            'nombre_material' => $entradaDetalle->material->nombre,
+                            'cantidad_pedida' => $cantidad,
+                            'disponible'      => $libre,
                         ];
                     }
 
-                    // Salida del proyecto cerrado
                     $salidaDet                     = new SalidasDetalle();
                     $salidaDet->id_salida          = $salida->id;
                     $salidaDet->id_entrada_detalle = $idEntradaDetalle;
                     $salidaDet->cantidad_salida    = $cantidad;
                     $salidaDet->save();
 
-                    // Entrada al proyecto destino
                     $infoMaterial = Materiales::find($entradaDetalle->id_material);
 
                     $entradaDet                   = new EntradasDetalle();
@@ -496,13 +507,19 @@ class SalidasController extends Controller
                 // ── TIPO: SALIDA GENERAL ──────────────────────────────────────
             } elseif ($tipodestino === 'general') {
 
-                // Cabecera salida sin proyecto destino
                 $salida                                = new Salidas();
                 $salida->fecha                         = Carbon::parse($request->fecha);
                 $salida->descripcion                   = $request->descripcion;
                 $salida->id_tipoproyecto               = $proyectoCerrado;
-                $salida->es_transferencia              = 1;
-                $salida->id_tipoproyecto_transferencia = $proyectoDestino; // ← destino guardado
+                $salida->es_transferencia              = 0;
+                $salida->id_tipoproyecto_transferencia = null;
+                $salida->acta_numero                   = $actaNumero;
+                $salida->acta_referencia               = $actaReferencia;
+                $salida->acta_id_departamento          = $actaIdDepto;
+                $salida->acta_nombre_solic             = $actaNombreSolic;
+                $salida->acta_cargo_solic              = $actaCargoSolic;
+                $salida->acta_observaciones            = $actaObservaciones;
+                $salida->acta_tipo_destino             = $actaTipoDestino;
                 $salida->save();
 
                 foreach ($contenedor as $item) {
@@ -563,13 +580,13 @@ class SalidasController extends Controller
                         ];
                     }
 
-                    $reserva                    = new Reserva();
+                    $reserva                     = new Reserva();
                     $reserva->id_entrada_detalle = $idEntradaDetalle;
-                    $reserva->id_tipoproyecto   = $proyectoCerrado;
-                    $reserva->cantidad          = $cantidad;
-                    $reserva->descripcion       = $request->descripcion;
-                    $reserva->fecha_reserva     = Carbon::parse($request->fecha);
-                    $reserva->despachado        = 0;
+                    $reserva->id_tipoproyecto    = $proyectoCerrado;
+                    $reserva->cantidad           = $cantidad;
+                    $reserva->descripcion        = $request->descripcion;
+                    $reserva->fecha_reserva      = Carbon::parse($request->fecha);
+                    $reserva->despachado         = 0;
                     $reserva->save();
                 }
 
@@ -578,7 +595,10 @@ class SalidasController extends Controller
             }
 
             DB::commit();
-            return ['success' => 10];
+
+            // Retornar id_salida para los tipos que crean salida
+            $idSalida = isset($salida) ? $salida->id : null;
+            return ['success' => 10, 'id_salida' => $idSalida];
 
         } catch (\Throwable $e) {
             Log::error('retirarMaterialDeProyectosCerrados: ' . $e);
@@ -586,6 +606,8 @@ class SalidasController extends Controller
             return ['success' => 99];
         }
     }
+
+
 
     public function materialesDisponiblesCerrado(Request $request)
     {

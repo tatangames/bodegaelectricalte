@@ -43,11 +43,9 @@
     <style>
         table { table-layout: fixed; }
         *:focus { outline: none; }
-
         .seccion-header {
             background: linear-gradient(135deg, #1a3a6b 0%, #2156af 100%);
-            border-radius: 10px 10px 0 0;
-            padding: 12px 18px;
+            border-radius: 10px 10px 0 0; padding: 12px 18px;
         }
         .seccion-header h3 {
             color: #fff; font-size: 14px; font-weight: 700;
@@ -62,16 +60,12 @@
             text-transform: uppercase; letter-spacing: .06em;
             margin-bottom: 5px; display: block;
         }
-        .divider-azul {
-            border: none; border-top: 2px solid #e8eef8; margin: 18px 0;
-        }
-
+        .divider-azul { border: none; border-top: 2px solid #e8eef8; margin: 18px 0; }
         .destino-pills { display: flex; gap: 10px; flex-wrap: wrap; }
         .destino-pill {
             flex: 1; min-width: 140px; padding: 14px 10px;
             border: 2px solid #dee2e6; border-radius: 10px;
-            text-align: center; cursor: pointer;
-            transition: all .2s; background: #fff;
+            text-align: center; cursor: pointer; transition: all .2s; background: #fff;
         }
         .destino-pill:hover { border-color: #2156af; background: #f0f4ff; }
         .destino-pill.activo-proyecto { border-color: #28a745; background: #f0fff4; }
@@ -82,46 +76,31 @@
         .destino-pill.activo-general i  { color: #fd7e14; }
         .destino-pill.activo-reserva i  { color: #6f42c1; }
         .destino-pill span { font-size: 12px; font-weight: 700; color: #444; text-transform: uppercase; }
-
         #tablaMaterialesCerrado thead th {
             background: #495057; color: #fff; font-size: 11px;
-            font-weight: 700; text-transform: uppercase;
-            border: none !important; padding: 8px 10px;
+            font-weight: 700; text-transform: uppercase; border: none !important; padding: 8px 10px;
         }
         #tablaMaterialesCerrado tbody td { vertical-align: middle; font-size: 13px; padding: 7px 10px; }
-
         #matriz thead tr th {
             background: #2156af; color: #fff; font-size: 11px;
-            font-weight: 700; text-transform: uppercase;
-            border: none !important; padding: 10px 12px;
+            font-weight: 700; text-transform: uppercase; border: none !important; padding: 10px 12px;
         }
         #matriz tbody td { vertical-align: middle; font-size: 13px; padding: 8px 10px; }
-
         .btn-guardar-salida {
             background: linear-gradient(135deg, #28a745, #1e7e34);
-            color: #fff; border: none; border-radius: 8px;
-            padding: 10px 28px; font-weight: 400; font-size: 14px;
+            color: #fff; border: none; border-radius: 8px; padding: 10px 28px;
+            font-weight: 400; font-size: 14px;
             box-shadow: 0 4px 14px rgba(40,167,69,.35); transition: all .2s;
         }
-        .btn-guardar-salida:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(40,167,69,.45); color: #fff;
-        }
+        .btn-guardar-salida:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(40,167,69,.45); color: #fff; }
         .btn-form-solicitud {
             background: linear-gradient(135deg, #7a4f1a, #fd7e14);
-            color: #fff; border: none; border-radius: 8px;
-            padding: 10px 20px; font-weight: 400; font-size: 14px;
+            color: #fff; border: none; border-radius: 8px; padding: 10px 20px;
+            font-weight: 400; font-size: 14px;
             box-shadow: 0 4px 14px rgba(253,126,20,.35); transition: all .2s;
         }
-        .btn-form-solicitud:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(253,126,20,.45); color: #fff;
-        }
-
-        .badge-reservado {
-            background: #6f42c1; color: #fff;
-            font-size: 10px; padding: 2px 6px; border-radius: 4px;
-        }
+        .btn-form-solicitud:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(253,126,20,.45); color: #fff; }
+        .badge-reservado { background: #6f42c1; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; }
         .tr-reservado { background: #faf5ff !important; }
     </style>
 
@@ -137,9 +116,7 @@
                     <div class="card-body">
                         <div class="row align-items-end">
                             <div class="col-md-10">
-                                <label class="field-label">
-                                    <i class="fas fa-lock mr-1"></i>Proyecto Cerrado
-                                </label>
+                                <label class="field-label"><i class="fas fa-lock mr-1"></i>Proyecto Cerrado</label>
                                 <select class="form-control" id="select-proyecto">
                                     <option value="0" selected disabled>Seleccionar Proyecto Cerrado…</option>
                                     @foreach($proyectosCerrados as $item)
@@ -160,7 +137,7 @@
             </div>
         </section>
 
-        {{-- ══ PASO 2: Materiales disponibles ══ --}}
+        {{-- ══ PASO 2 ══ --}}
         <section class="content" id="seccionMateriales" style="margin-bottom:0; display:none">
             <div class="container-fluid">
                 <div class="card card-info">
@@ -193,7 +170,7 @@
             </div>
         </section>
 
-        {{-- ══ PASO 3: Tipo de Movimiento ══ --}}
+        {{-- ══ PASO 3 ══ --}}
         <section class="content" id="seccionDestino" style="margin-bottom:0; display:none">
             <div class="container-fluid">
                 <div class="card card-info">
@@ -201,7 +178,6 @@
                         <h3><i class="fas fa-route mr-2"></i>Paso 3 — Tipo de Movimiento</h3>
                     </div>
                     <div class="card-body">
-
                         <div class="destino-pills mb-4">
                             <div class="destino-pill" id="pill-proyecto" onclick="seleccionarDestino('proyecto')">
                                 <i class="fas fa-project-diagram"></i>
@@ -216,13 +192,10 @@
                                 <span>Reservar</span>
                             </div>
                         </div>
-
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-calendar-alt mr-1"></i>Fecha
-                                    </label>
+                                    <label class="field-label"><i class="fas fa-calendar-alt mr-1"></i>Fecha</label>
                                     <input type="date" class="form-control" id="fecha">
                                 </div>
                             </div>
@@ -237,7 +210,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div id="seccion-proyecto-destino" style="display:none">
                             <hr class="divider-azul">
                             <div class="row">
@@ -255,13 +227,12 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         </section>
 
-        {{-- ══ PASO 4: Detalle ══ --}}
+        {{-- ══ PASO 4 ══ --}}
         <section class="content" id="seccionDetalle" style="display:none">
             <div class="container-fluid">
                 <div class="card card-info">
@@ -292,8 +263,10 @@
                          style="border-top:2px solid #e8eef8; background:#f8faff; border-radius:0 0 10px 10px">
                         <small class="text-muted" id="lblTipoMovimiento">—</small>
                         <div style="display:flex; gap:10px;">
-                            <button type="button" class="btn-form-solicitud" onclick="abrirModalForm()">
-                                <i class="fas fa-file-alt mr-1"></i> GEAD-002-FORM
+                            <button type="button" class="btn-form-solicitud" id="btnAbrirForm"
+                                    onclick="abrirModalFormDinamico()" style="display:none">
+                                <i class="fas fa-file-alt mr-1"></i>
+                                <span id="lblBtnForm">FORM</span>
                             </button>
                             <button type="button" class="btn-guardar-salida" onclick="preguntaGuardar()">
                                 <i class="fas fa-save mr-1"></i> Guardar
@@ -355,91 +328,73 @@
                         </button>
                     </div>
                     <div class="modal-body">
-
                         <div class="alert alert-warning" style="font-size:12px;">
                             <i class="fas fa-info-circle mr-1"></i>
-                            Complete los datos para generar el formulario de solicitud GEAD-002-FORM.
-                            Todos los campos son opcionales excepto la Unidad Solicitante.
+                            Complete los datos. La Unidad Solicitante es requerida.
                         </div>
-
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-hashtag mr-1"></i>No. de Solicitud
-                                    </label>
-                                    <input type="text" class="form-control" id="form-numero"
-                                           placeholder="Ej: 001-2025">
+                                    <label class="field-label"><i class="fas fa-hashtag mr-1"></i>No. de Solicitud</label>
+                                    <input type="text" class="form-control" id="form-numero" placeholder="Ej: 001-2025">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-hashtag mr-1"></i>No. de Proyecto
-                                    </label>
-                                    <input type="text" class="form-control" id="form-noproyecto"
-                                           placeholder="Ej: PROY-001-2025">
+                                    <label class="field-label"><i class="fas fa-hashtag mr-1"></i>No. de Proyecto</label>
+                                    <input type="text" class="form-control" id="form-noproyecto" placeholder="Ej: PROY-001-2025">
                                 </div>
                             </div>
                         </div>
-
+                        <div class="form-group">
+                            <label class="field-label">
+                                <i class="fas fa-project-diagram mr-1"></i>Nombre del Proyecto
+                                <small style="text-transform:none; font-weight:400; color:#888;">(puede editarlo)</small>
+                            </label>
+                            <input type="text" class="form-control" id="form-nombre-proyecto"
+                                   placeholder="Nombre del proyecto destino o de origen…">
+                        </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-file-alt mr-1"></i>Acuerdo de Aprobación del Proyecto
-                                    </label>
-                                    <input type="text" class="form-control" id="form-acuerdo"
-                                           placeholder="Ej: Acuerdo No. 123-2025">
+                                    <label class="field-label"><i class="fas fa-file-alt mr-1"></i>Acuerdo de Aprobación</label>
+                                    <input type="text" class="form-control" id="form-acuerdo" placeholder="Ej: Acuerdo No. 123-2025">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="field-label">
-                                        <i class="fas fa-building mr-1"></i>Unidad Solicitante
-                                        <span style="color:red">*</span>
+                                        <i class="fas fa-building mr-1"></i>Unidad Solicitante <span style="color:red">*</span>
                                     </label>
                                     <select class="form-control" id="form-departamento">
                                         <option value="">— Seleccionar —</option>
                                         @foreach($departamentos as $d)
-                                            <option value="{{ $d->id }}" data-nombre="{{ $d->nombre }}">
-                                                {{ $d->nombre }}
-                                            </option>
+                                            <option value="{{ $d->id }}" data-nombre="{{ $d->nombre }}">{{ $d->nombre }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                             </div>
                         </div>
-
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-user-tie mr-1"></i>Jefe o Encargado de Unidad Solicitante
-                                    </label>
-                                    <input type="text" class="form-control" id="form-jefe"
-                                           placeholder="Nombre completo">
+                                    <label class="field-label"><i class="fas fa-user-tie mr-1"></i>Jefe o Encargado</label>
+                                    <input type="text" class="form-control" id="form-jefe" placeholder="Nombre completo">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-align-left mr-1"></i>Justificación del Destino
-                                    </label>
-                                    <textarea class="form-control" id="form-justificacion"
-                                              rows="2" placeholder="Justifique el uso de los materiales…"></textarea>
+                                    <label class="field-label"><i class="fas fa-align-left mr-1"></i>Justificación del Destino</label>
+                                    <textarea class="form-control" id="form-justificacion" rows="2"
+                                              placeholder="Justifique el uso de los materiales…"></textarea>
                                 </div>
                             </div>
                         </div>
-
                         <div class="form-group">
-                            <label class="field-label">
-                                <i class="fas fa-sticky-note mr-1"></i>Observaciones
-                            </label>
-                            <textarea class="form-control" id="form-observaciones"
-                                      rows="2" placeholder="Observaciones adicionales (opcional)"></textarea>
+                            <label class="field-label"><i class="fas fa-sticky-note mr-1"></i>Observaciones</label>
+                            <textarea class="form-control" id="form-observaciones" rows="2"
+                                      placeholder="Observaciones adicionales (opcional)"></textarea>
                         </div>
-
                     </div>
                     <div class="modal-footer justify-content-between">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -448,6 +403,97 @@
                         <button type="button" class="btn btn-warning" onclick="generarFormPDF()"
                                 style="color:#fff; font-weight:600;">
                             <i class="fas fa-file-pdf mr-1"></i>Generar GEAD-002-FORM
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ══ MODAL: GEAD-003-FORM ══ --}}
+        <div class="modal fade" id="modalForm003" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header" style="background:linear-gradient(135deg,#1a6b3a,#28a745)">
+                        <h4 class="modal-title" style="color:#fff">
+                            <i class="fas fa-file-alt mr-2"></i>Formulario de Solicitud — GEAD-003-FORM
+                        </h4>
+                        <button type="button" class="close" data-dismiss="modal" style="color:#fff">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-success" style="font-size:12px;">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Formulario para Salida General — Mantenimiento de Instalaciones Municipales.
+                            La Unidad Solicitante es requerida.
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label"><i class="fas fa-hashtag mr-1"></i>No. de Solicitud</label>
+                                    <input type="text" class="form-control" id="form003-numero" placeholder="Ej: 001-2025">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">
+                                        <i class="fas fa-tag mr-1"></i>Tipo de Destino / Uso
+                                        <small style="text-transform:none; font-weight:400; color:#888;">(puede editarlo)</small>
+                                    </label>
+                                    <input type="text" class="form-control" id="form003-tipodestino"
+                                           placeholder="Ej: Mantenimiento edificio principal…">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">
+                                        <i class="fas fa-building mr-1"></i>Unidad Solicitante <span style="color:red">*</span>
+                                    </label>
+                                    <select class="form-control" id="form003-departamento">
+                                        <option value="">— Seleccionar —</option>
+                                        @foreach($departamentos as $d)
+                                            <option value="{{ $d->id }}" data-nombre="{{ $d->nombre }}">{{ $d->nombre }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label"><i class="fas fa-user mr-1"></i>Nombre del Solicitante</label>
+                                    <input type="text" class="form-control" id="form003-nombre" placeholder="Nombre completo">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label"><i class="fas fa-id-badge mr-1"></i>Cargo del Solicitante</label>
+                                    <input type="text" class="form-control" id="form003-cargo" placeholder="Cargo o puesto">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label"><i class="fas fa-align-left mr-1"></i>Justificación del Destino</label>
+                                    <textarea class="form-control" id="form003-justificacion" rows="2"
+                                              placeholder="Justifique el uso de los materiales…"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="field-label"><i class="fas fa-sticky-note mr-1"></i>Observaciones</label>
+                            <textarea class="form-control" id="form003-observaciones" rows="2"
+                                      placeholder="Observaciones adicionales (opcional)"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times mr-1"></i>Cancelar
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="generarForm003PDF()"
+                                style="font-weight:600;">
+                            <i class="fas fa-file-pdf mr-1"></i>Generar GEAD-003-FORM
                         </button>
                     </div>
                 </div>
@@ -467,107 +513,80 @@
                         </button>
                     </div>
                     <div class="modal-body">
-
                         <div class="alert alert-info" style="font-size:12px;">
                             <i class="fas fa-info-circle mr-1"></i>
                             Complete los datos del acta. La Unidad Solicitante es requerida.
                         </div>
-
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-hashtag mr-1"></i>No. de Acta de Recepción
-                                    </label>
-                                    <input type="text" class="form-control" id="acta-numero"
-                                           placeholder="Ej: 001-2025">
+                                    <label class="field-label"><i class="fas fa-hashtag mr-1"></i>No. de Acta de Recepción</label>
+                                    <input type="text" class="form-control" id="acta-numero" placeholder="Ej: 001-2025">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-file-invoice mr-1"></i>Referencia de la Solicitud
-                                    </label>
-                                    <input type="text" class="form-control" id="acta-referencia"
-                                           placeholder="Ej: GEAD-002-FORM No. 001">
+                                    <label class="field-label"><i class="fas fa-file-invoice mr-1"></i>Referencia de la Solicitud</label>
+                                    <input type="text" class="form-control" id="acta-referencia" placeholder="Ej: GEAD-002-FORM No. 001">
                                 </div>
                             </div>
                         </div>
-
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="field-label">
-                                        <i class="fas fa-building mr-1"></i>Unidad Solicitante
-                                        <span style="color:red">*</span>
+                                        <i class="fas fa-building mr-1"></i>Unidad Solicitante <span style="color:red">*</span>
                                     </label>
                                     <select class="form-control" id="acta-departamento">
                                         <option value="">— Seleccionar —</option>
                                         @foreach($departamentos as $d)
-                                            <option value="{{ $d->id }}" data-nombre="{{ $d->nombre }}">
-                                                {{ $d->nombre }}
-                                            </option>
+                                            <option value="{{ $d->id }}" data-nombre="{{ $d->nombre }}">{{ $d->nombre }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-user mr-1"></i>Nombre del Solicitante
-                                    </label>
-                                    <input type="text" class="form-control" id="acta-nombre-solicitante"
-                                           placeholder="Nombre completo">
+                                    <label class="field-label"><i class="fas fa-user mr-1"></i>Nombre del Solicitante</label>
+                                    <input type="text" class="form-control" id="acta-nombre-solicitante" placeholder="Nombre completo">
                                 </div>
                             </div>
                         </div>
-
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-id-badge mr-1"></i>Cargo del Solicitante
-                                    </label>
-                                    <input type="text" class="form-control" id="acta-cargo-solicitante"
-                                           placeholder="Cargo o puesto">
+                                    <label class="field-label"><i class="fas fa-id-badge mr-1"></i>Cargo del Solicitante</label>
+                                    <input type="text" class="form-control" id="acta-cargo-solicitante" placeholder="Cargo o puesto">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="field-label">
                                         <i class="fas fa-tag mr-1"></i>Tipo de Destino / Uso
-                                        <small style="text-transform:none; font-weight:400; color:#888;">
-                                            (puede editarlo)
-                                        </small>
+                                        <small style="text-transform:none; font-weight:400; color:#888;">(puede editarlo)</small>
                                     </label>
                                     <input type="text" class="form-control" id="acta-tipo-destino"
                                            placeholder="Ej: Mantenimiento edificio principal…">
                                 </div>
                             </div>
                         </div>
-
                         <div class="form-group">
-                            <label class="field-label">
-                                <i class="fas fa-sticky-note mr-1"></i>Observaciones
-                            </label>
-                            <textarea class="form-control" id="acta-observaciones"
-                                      rows="2" placeholder="Observaciones adicionales (opcional)"></textarea>
+                            <label class="field-label"><i class="fas fa-sticky-note mr-1"></i>Observaciones</label>
+                            <textarea class="form-control" id="acta-observaciones" rows="2"
+                                      placeholder="Observaciones adicionales (opcional)"></textarea>
                         </div>
-
                     </div>
                     <div class="modal-footer justify-content-between">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">
                             <i class="fas fa-times mr-1"></i>Cancelar
                         </button>
                         <div>
+                            {{-- Solo PDF sin guardar y Guardar --}}
                             <button type="button" class="btn btn-info mr-2" onclick="guardar('pdf')">
-                                <i class="fas fa-file-pdf mr-1"></i>PDF
+                                <i class="fas fa-file-pdf mr-1"></i>Generar PDF
                             </button>
-                            <button type="button" class="btn btn-success mr-2" onclick="guardar('guardar')">
+                            <button type="button" class="btn btn-success" onclick="guardar('guardar')">
                                 <i class="fas fa-save mr-1"></i>Guardar
-                            </button>
-                            <button type="button" class="btn btn-primary" onclick="guardar('ambos')">
-                                <i class="fas fa-save mr-1"></i>Guardar y PDF
                             </button>
                         </div>
                     </div>
@@ -588,7 +607,6 @@
     <script src="{{ asset('js/select2.min.js') }}"></script>
 
     <script>
-
         var tipoDestino = null;
 
         $(document).ready(function () {
@@ -606,13 +624,15 @@
                 language: { noResults: function () { return "Búsqueda no encontrada"; } }
             });
             $('#acta-departamento').select2({
-                theme: "bootstrap-5",
-                dropdownParent: $('#modalActa'),
+                theme: "bootstrap-5", dropdownParent: $('#modalActa'),
                 language: { noResults: function () { return "No encontrado"; } }
             });
             $('#form-departamento').select2({
-                theme: "bootstrap-5",
-                dropdownParent: $('#modalForm'),
+                theme: "bootstrap-5", dropdownParent: $('#modalForm'),
+                language: { noResults: function () { return "No encontrado"; } }
+            });
+            $('#form003-departamento').select2({
+                theme: "bootstrap-5", dropdownParent: $('#modalForm003'),
                 language: { noResults: function () { return "No encontrado"; } }
             });
 
@@ -624,11 +644,8 @@
             });
         });
 
-        // ── Ocultar pasos ─────────────────────────────────────────────────
         function ocultarPasos() {
-            $('#seccionMateriales').hide();
-            $('#seccionDestino').hide();
-            $('#seccionDetalle').hide();
+            $('#seccionMateriales, #seccionDestino, #seccionDetalle').hide();
             $('#tbodyMateriales').empty();
             $('#matriz tbody tr').remove();
             actualizarContador();
@@ -636,35 +653,24 @@
             limpiarPills();
         }
 
-        // ── Cargar materiales ─────────────────────────────────────────────
         function cargarMaterialesProyecto() {
             var idProyecto = $('#select-proyecto').val();
             var nombreProy = $('#select-proyecto option:selected').text();
 
             if (!idProyecto || idProyecto === '0') {
-                toastr.error('Seleccione un proyecto cerrado');
-                return;
+                toastr.error('Seleccione un proyecto cerrado'); return;
             }
 
             openLoading();
-
-            axios.post(urlAdmin + '/admin/transferencia/materiales/cerrado', {
-                id_proyecto: idProyecto
-            })
+            axios.post(urlAdmin + '/admin/transferencia/materiales/cerrado', { id_proyecto: idProyecto })
                 .then((response) => {
                     closeLoading();
-
-                    if (response.data.success !== 1) {
-                        toastr.error('Error al cargar materiales');
-                        return;
-                    }
+                    if (response.data.success !== 1) { toastr.error('Error al cargar materiales'); return; }
 
                     var lista = response.data.materiales;
-
                     if (!lista || lista.length === 0) {
                         toastr.warning('Este proyecto no tiene material disponible');
-                        ocultarPasos();
-                        return;
+                        ocultarPasos(); return;
                     }
 
                     $('#lblProyectoCerrado').text(nombreProy);
@@ -672,38 +678,29 @@
 
                     $.each(lista, function (i, m) {
                         var badgeReservado = m.reservado > 0
-                            ? ' <span class="badge-reservado">🔒 ' + m.reservado + ' reservado</span>'
-                            : '';
+                            ? ' <span class="badge-reservado">🔒 ' + m.reservado + ' reservado</span>' : '';
                         var trClass = m.reservado > 0 ? 'tr-reservado' : '';
                         var btnSeleccionar = m.libre > 0
                             ? "<button class='btn btn-primary btn-xs' " +
                             "data-id='" + m.id_entrada_detalle + "' " +
                             "data-nombre='" + m.nombre.replace(/'/g, "&#39;").replace(/\n/g, ' ').replace(/\r/g, '') + "' " +
-                            "data-libre='" + m.libre + "' " +
-                            "onclick=\"seleccionarMaterial(this)\">" +
+                            "data-libre='" + m.libre + "' onclick=\"seleccionarMaterial(this)\">" +
                             "<i class='fas fa-plus'></i> Seleccionar</button>"
                             : "<span class='badge badge-secondary'>Sin stock libre</span>";
 
                         var celdaMaterial = m.nombre + badgeReservado +
                             "<br><small style='color:#888; font-size:10px'>" + (m.medida ?? '—') + "</small>";
 
-                        var fila = "<tr class='" + trClass + "'>" +
-                            "<td>" + (i + 1) + "</td>" +
-                            "<td>" + celdaMaterial + "</td>" +
-                            "<td>" + (m.medida ?? '—') + "</td>" +
-                            "<td>" + m.disponible + "</td>" +
-                            "<td>" + m.reservado + "</td>" +
-                            "<td><strong>" + m.libre + "</strong></td>" +
-                            "<td>" + btnSeleccionar + "</td>" +
-                            "</tr>";
-
-                        $('#tbodyMateriales').append(fila);
+                        $('#tbodyMateriales').append(
+                            "<tr class='" + trClass + "'>" +
+                            "<td>" + (i + 1) + "</td><td>" + celdaMaterial + "</td>" +
+                            "<td>" + (m.medida ?? '—') + "</td><td>" + m.disponible + "</td>" +
+                            "<td>" + m.reservado + "</td><td><strong>" + m.libre + "</strong></td>" +
+                            "<td>" + btnSeleccionar + "</td></tr>"
+                        );
                     });
 
-                    $('#seccionMateriales').show();
-                    $('#seccionDestino').show();
-                    $('#seccionDetalle').show();
-
+                    $('#seccionMateriales, #seccionDestino, #seccionDetalle').show();
                     $('#matriz tbody tr').remove();
                     actualizarContador();
                     tipoDestino = null;
@@ -713,13 +710,9 @@
         }
 
         function seleccionarMaterial(btn) {
-            var idEntradaDetalle = $(btn).data('id');
-            var nombre           = $(btn).data('nombre');
-            var libre            = parseInt($(btn).data('libre'));
-            abrirModalCantidad(idEntradaDetalle, nombre, libre);
+            abrirModalCantidad($(btn).data('id'), $(btn).data('nombre'), parseInt($(btn).data('libre')));
         }
 
-        // ── Seleccionar tipo destino ──────────────────────────────────────
         function seleccionarDestino(tipo) {
             tipoDestino = tipo;
             limpiarPills();
@@ -727,21 +720,20 @@
             if (tipo === 'proyecto') {
                 $('#pill-proyecto').addClass('activo-proyecto');
                 $('#seccion-proyecto-destino').show();
-                $('#lblTipoMovimiento').html(
-                    '<i class="fas fa-project-diagram mr-1" style="color:#28a745"></i> Transferir a Proyecto Activo'
-                );
+                $('#lblTipoMovimiento').html('<i class="fas fa-project-diagram mr-1" style="color:#28a745"></i> Transferir a Proyecto Activo');
+                $('#btnAbrirForm').show();
+                $('#lblBtnForm').text('GEAD-002-FORM');
             } else if (tipo === 'general') {
                 $('#pill-general').addClass('activo-general');
                 $('#seccion-proyecto-destino').hide();
-                $('#lblTipoMovimiento').html(
-                    '<i class="fas fa-sign-out-alt mr-1" style="color:#fd7e14"></i> Salida General'
-                );
+                $('#lblTipoMovimiento').html('<i class="fas fa-sign-out-alt mr-1" style="color:#fd7e14"></i> Salida General');
+                $('#btnAbrirForm').show();
+                $('#lblBtnForm').text('GEAD-003-FORM');
             } else if (tipo === 'reserva') {
                 $('#pill-reserva').addClass('activo-reserva');
                 $('#seccion-proyecto-destino').hide();
-                $('#lblTipoMovimiento').html(
-                    '<i class="fas fa-lock mr-1" style="color:#6f42c1"></i> Reserva de Material'
-                );
+                $('#lblTipoMovimiento').html('<i class="fas fa-lock mr-1" style="color:#6f42c1"></i> Reserva de Material');
+                $('#btnAbrirForm').hide();
             }
 
             $('#matriz tbody tr').remove();
@@ -753,18 +745,28 @@
             $('#pill-general').removeClass('activo-general');
             $('#pill-reserva').removeClass('activo-reserva');
             $('#seccion-proyecto-destino').hide();
+            $('#btnAbrirForm').hide();
         }
 
-        // ── Modal cantidad ────────────────────────────────────────────────
+        function abrirModalFormDinamico() {
+            if ($('#matriz > tbody > tr').length <= 0) {
+                toastr.error('Agregue al menos un material al detalle'); return;
+            }
+            if (tipoDestino === 'proyecto') {
+                var nombreProy = $('#select-proyecto option:selected').text();
+                var nombreDest = $('#select-proyecto-destino option:selected').text();
+                if (nombreDest && nombreDest !== 'Seleccionar proyecto destino…') nombreProy = nombreDest;
+                $('#form-nombre-proyecto').val(nombreProy);
+                $('#modalForm').modal('show');
+            } else if (tipoDestino === 'general') {
+                $('#form003-tipodestino').val('');
+                $('#modalForm003').modal('show');
+            }
+        }
+
         function abrirModalCantidad(idEntradaDetalle, nombre, libre) {
-            if (!tipoDestino) {
-                toastr.warning('Primero seleccione el tipo de movimiento en el Paso 3');
-                return;
-            }
-            if (libre <= 0) {
-                toastr.info('Sin stock libre disponible');
-                return;
-            }
+            if (!tipoDestino) { toastr.warning('Primero seleccione el tipo de movimiento en el Paso 3'); return; }
+            if (libre <= 0)   { toastr.info('Sin stock libre disponible'); return; }
             $('#modal-id-entrada-detalle').val(idEntradaDetalle);
             $('#modal-nombre-material').val(nombre);
             $('#modal-max').val(libre);
@@ -780,7 +782,6 @@
             if (parseInt(input.value) < 0)   input.value = '';
         }
 
-        // ── Agregar al detalle ────────────────────────────────────────────
         function agregarAlDetalle() {
             var idEntradaDetalle = $('#modal-id-entrada-detalle').val();
             var nombre           = $('#modal-nombre-material').val();
@@ -791,126 +792,101 @@
             if (cantidad > max)             { toastr.error('Supera el stock libre');        return; }
 
             var labelDestino = '';
-            if (tipoDestino === 'proyecto')
-                labelDestino = '<span class="badge badge-success">Proyecto</span>';
-            if (tipoDestino === 'general')
-                labelDestino = '<span class="badge badge-warning">General</span>';
-            if (tipoDestino === 'reserva')
-                labelDestino = '<span class="badge" style="background:#6f42c1; color:#fff">Reserva</span>';
+            if (tipoDestino === 'proyecto') labelDestino = '<span class="badge badge-success">Proyecto</span>';
+            if (tipoDestino === 'general')  labelDestino = '<span class="badge badge-warning">General</span>';
+            if (tipoDestino === 'reserva')  labelDestino = '<span class="badge" style="background:#6f42c1; color:#fff">Reserva</span>';
 
             var nFilas = $('#matriz > tbody > tr').length + 1;
-
-            var markup = "<tr>" +
+            $('#matriz tbody').append(
+                "<tr>" +
                 "<td><span style='display:block; text-align:center'>" + nFilas + "</span></td>" +
-                "<td>" +
-                "<input name='idmaterialArray[]' type='hidden' data-idmaterialArray='" + idEntradaDetalle + "'>" +
-                "<input disabled value='" + nombre.replace(/'/g, "&#39;") + "' class='form-control form-control-sm' type='text'>" +
-                "</td>" +
-                "<td>" +
-                "<input name='salidaArray[]' disabled " +
-                "data-cantidadSalida='" + cantidad + "' " +
-                "value='" + cantidad + "' " +
-                "class='form-control form-control-sm' type='text'>" +
-                "</td>" +
+                "<td><input name='idmaterialArray[]' type='hidden' data-idmaterialArray='" + idEntradaDetalle + "'>" +
+                "<input disabled value='" + nombre.replace(/'/g, "&#39;") + "' class='form-control form-control-sm' type='text'></td>" +
+                "<td><input name='salidaArray[]' disabled data-cantidadSalida='" + cantidad + "' value='" + cantidad + "' class='form-control form-control-sm' type='text'></td>" +
                 "<td>" + labelDestino + "</td>" +
-                "<td>" +
-                "<button type='button' class='btn btn-danger btn-block btn-sm' onclick='borrarFila(this)'>Borrar</button>" +
-                "</td>" +
-                "</tr>";
-
-            $('#matriz tbody').append(markup);
+                "<td><button type='button' class='btn btn-danger btn-block btn-sm' onclick='borrarFila(this)'>Borrar</button></td>" +
+                "</tr>"
+            );
             actualizarContador();
             $('#modalCantidad').modal('hide');
             toastr.success('Agregado al detalle');
         }
 
-        // ── Abrir modal FORM ──────────────────────────────────────────────
-        function abrirModalForm() {
-            if ($('#matriz > tbody > tr').length <= 0) {
-                toastr.error('Agregue al menos un material al detalle');
-                return;
-            }
-            $('#modalForm').modal('show');
-        }
-
-        // ── Generar PDF GEAD-002-FORM ─────────────────────────────────────
         function generarFormPDF() {
             var formDepto = $('#form-departamento').val();
-            if (!formDepto || formDepto === '') {
-                toastr.error('La Unidad Solicitante es requerida');
-                return;
-            }
-
-            var proyectoCerrado  = $('#select-proyecto').val();
-            var nombreProy       = $('#select-proyecto option:selected').text();
-            var proyectoDestino  = $('#select-proyecto-destino option:selected').text() || '';
-            var fecha            = document.getElementById('fecha').value;
-            var formNumero       = $('#form-numero').val().trim()       || '';
-            var formNoproyecto   = $('#form-noproyecto').val().trim()   || '';
-            var formAcuerdo      = $('#form-acuerdo').val().trim()      || '';
-            var formDeptoNombre  = $('#form-departamento option:selected').text() || '';
-            var formJefe         = $('#form-jefe').val().trim()         || '';
-            var formJustificacion= $('#form-justificacion').val().trim()|| '';
-            var formObservaciones= $('#form-observaciones').val().trim()|| '';
+            if (!formDepto || formDepto === '') { toastr.error('La Unidad Solicitante es requerida'); return; }
 
             var materiales = [];
             $('#matriz > tbody > tr').each(function () {
-                var nombre       = $(this).find("input[type='text']").val();
-                var cantidad     = $(this).find("input[name='salidaArray[]']").attr('data-cantidadSalida');
-                var idEntradaDet = $(this).find("input[name='idmaterialArray[]']").attr('data-idmaterialArray');
-                materiales.push({ nombre: nombre, cantidad: cantidad, id_entrada_detalle: idEntradaDet });
+                materiales.push({
+                    nombre:             $(this).find("input[type='text']").val(),
+                    cantidad:           $(this).find("input[name='salidaArray[]']").attr('data-cantidadSalida'),
+                    id_entrada_detalle: $(this).find("input[name='idmaterialArray[]']").attr('data-idmaterialArray')
+                });
             });
 
-            var form = $('<form>', {
-                method: 'POST',
-                action: "{{ URL::to('admin/reporte/form/solicitud/preview') }}",
-                target: '_blank'
-            });
-
-            form.append($('<input>', { type: 'hidden', name: '_token',           value: "{{ csrf_token() }}" }));
-            form.append($('<input>', { type: 'hidden', name: 'idproy',           value: proyectoCerrado }));
-            form.append($('<input>', { type: 'hidden', name: 'nombre_proyecto',  value: nombreProy }));
-            form.append($('<input>', { type: 'hidden', name: 'proyecto_destino', value: proyectoDestino }));
-            form.append($('<input>', { type: 'hidden', name: 'fecha',            value: fecha }));
-            form.append($('<input>', { type: 'hidden', name: 'numero',           value: formNumero }));
-            form.append($('<input>', { type: 'hidden', name: 'noproyecto',       value: formNoproyecto }));
-            form.append($('<input>', { type: 'hidden', name: 'acuerdo',          value: formAcuerdo }));
-            form.append($('<input>', { type: 'hidden', name: 'depto',            value: formDeptoNombre }));
-            form.append($('<input>', { type: 'hidden', name: 'jefe',             value: formJefe }));
-            form.append($('<input>', { type: 'hidden', name: 'justificacion',    value: formJustificacion }));
-            form.append($('<input>', { type: 'hidden', name: 'observaciones',    value: formObservaciones }));
-            form.append($('<input>', { type: 'hidden', name: 'tipo_destino',     value: tipoDestino }));
-            form.append($('<input>', { type: 'hidden', name: 'materiales',       value: JSON.stringify(materiales) }));
-
-            $('body').append(form);
-            form.submit();
-            form.remove();
+            var form = $('<form>', { method: 'POST', action: "{{ URL::to('admin/reporte/form/solicitud/preview') }}", target: '_blank' });
+            form.append($('<input>', { type: 'hidden', name: '_token',          value: "{{ csrf_token() }}" }));
+            form.append($('<input>', { type: 'hidden', name: 'idproy',          value: $('#select-proyecto').val() }));
+            form.append($('<input>', { type: 'hidden', name: 'nombre_proyecto', value: $('#form-nombre-proyecto').val().trim() || $('#select-proyecto option:selected').text() }));
+            form.append($('<input>', { type: 'hidden', name: 'nombre_origen',   value: $('#select-proyecto option:selected').text() }));
+            form.append($('<input>', { type: 'hidden', name: 'proyecto_destino',value: $('#select-proyecto-destino option:selected').text() || '' }));
+            form.append($('<input>', { type: 'hidden', name: 'fecha',           value: document.getElementById('fecha').value }));
+            form.append($('<input>', { type: 'hidden', name: 'numero',          value: $('#form-numero').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'noproyecto',      value: $('#form-noproyecto').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'acuerdo',         value: $('#form-acuerdo').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'depto',           value: $('#form-departamento option:selected').text() }));
+            form.append($('<input>', { type: 'hidden', name: 'jefe',            value: $('#form-jefe').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'justificacion',   value: $('#form-justificacion').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'observaciones',   value: $('#form-observaciones').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'tipo_destino',    value: tipoDestino }));
+            form.append($('<input>', { type: 'hidden', name: 'materiales',      value: JSON.stringify(materiales) }));
+            $('body').append(form); form.submit(); form.remove();
         }
 
-        // ── Abrir modal acta ──────────────────────────────────────────────
+        function generarForm003PDF() {
+            var formDepto = $('#form003-departamento').val();
+            if (!formDepto || formDepto === '') { toastr.error('La Unidad Solicitante es requerida'); return; }
+
+            var materiales = [];
+            $('#matriz > tbody > tr').each(function () {
+                materiales.push({
+                    nombre:             $(this).find("input[type='text']").val(),
+                    cantidad:           $(this).find("input[name='salidaArray[]']").attr('data-cantidadSalida'),
+                    id_entrada_detalle: $(this).find("input[name='idmaterialArray[]']").attr('data-idmaterialArray')
+                });
+            });
+
+            var form = $('<form>', { method: 'POST', action: "{{ URL::to('admin/reporte/form003/solicitud/preview') }}", target: '_blank' });
+            form.append($('<input>', { type: 'hidden', name: '_token',        value: "{{ csrf_token() }}" }));
+            form.append($('<input>', { type: 'hidden', name: 'idproy',        value: $('#select-proyecto').val() }));
+            form.append($('<input>', { type: 'hidden', name: 'nombre_origen', value: $('#select-proyecto option:selected').text() }));
+            form.append($('<input>', { type: 'hidden', name: 'fecha',         value: document.getElementById('fecha').value }));
+            form.append($('<input>', { type: 'hidden', name: 'numero',        value: $('#form003-numero').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'tipodestino',   value: $('#form003-tipodestino').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'depto',         value: $('#form003-departamento option:selected').text() }));
+            form.append($('<input>', { type: 'hidden', name: 'nombre',        value: $('#form003-nombre').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'cargo',         value: $('#form003-cargo').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'justificacion', value: $('#form003-justificacion').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'observaciones', value: $('#form003-observaciones').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'materiales',    value: JSON.stringify(materiales) }));
+            $('body').append(form); form.submit(); form.remove();
+        }
+
         function preguntaGuardar() {
-            if (!tipoDestino) {
-                toastr.warning('Seleccione el tipo de movimiento en el Paso 3');
-                return;
-            }
-            if ($('#matriz > tbody > tr').length <= 0) {
-                toastr.error('Agregue al menos un material al detalle');
-                return;
-            }
+            if (!tipoDestino) { toastr.warning('Seleccione el tipo de movimiento en el Paso 3'); return; }
+            if ($('#matriz > tbody > tr').length <= 0) { toastr.error('Agregue al menos un material al detalle'); return; }
 
             var labelsTipo = {
                 proyecto: 'Transferencia a Proyecto de Inversión Pública',
-                general:  'Salida General — Mantenimiento de Instalaciones',
+                general:  '',
                 reserva:  'Reserva de Material',
             };
-
-            var tipoLabel = labelsTipo[tipoDestino] || tipoDestino;
+            var tipoLabel = labelsTipo[tipoDestino] || '';
 
             if (tipoDestino === 'proyecto') {
                 var nombreProyDest = $('#select-proyecto-destino option:selected').text();
-                if (nombreProyDest && nombreProyDest !== 'Seleccionar proyecto destino…') {
-                    tipoLabel = nombreProyDest;
-                }
+                if (nombreProyDest && nombreProyDest !== 'Seleccionar proyecto destino…') tipoLabel = nombreProyDest;
             }
 
             $('#acta-tipo-destino').val(tipoLabel);
@@ -919,35 +895,27 @@
                 Swal.fire({
                     title: '¿Confirmar reserva?',
                     text:  '¿Reservar estos materiales? Quedarán bloqueados hasta su despacho.',
-                    icon:  'question',
-                    showCancelButton:   true,
-                    confirmButtonColor: '#6f42c1',
-                    cancelButtonColor:  '#d33',
-                    cancelButtonText:   'Cancelar',
-                    confirmButtonText:  'Sí, reservar'
+                    icon: 'question', showCancelButton: true,
+                    confirmButtonColor: '#6f42c1', cancelButtonColor: '#d33',
+                    cancelButtonText: 'Cancelar', confirmButtonText: 'Sí, reservar'
                 }).then((result) => { if (result.isConfirmed) ejecutarGuardar('guardar'); });
             } else {
                 $('#modalActa').modal('show');
             }
         }
 
-        // ── Guardar dispatcher ────────────────────────────────────────────
         function guardar(accion) {
             var fecha           = document.getElementById('fecha').value;
             var proyectoCerrado = $('#select-proyecto').val();
             var proyectoDestino = $('#select-proyecto-destino').val();
             var actaIdDepto     = $('#acta-departamento').val();
 
-            if (!fecha) { toastr.error('Fecha es requerida'); return; }
-            if (!proyectoCerrado || proyectoCerrado === '0') {
-                toastr.error('Seleccione proyecto cerrado'); return;
-            }
+            if (!fecha)                                      { toastr.error('Fecha es requerida'); return; }
+            if (!proyectoCerrado || proyectoCerrado === '0') { toastr.error('Seleccione proyecto cerrado'); return; }
             if (tipoDestino === 'proyecto' && (!proyectoDestino || proyectoDestino === '0')) {
                 toastr.error('Seleccione el proyecto destino'); return;
             }
-            if (!actaIdDepto || actaIdDepto === '') {
-                toastr.error('La Unidad Solicitante es requerida'); return;
-            }
+            if (!actaIdDepto || actaIdDepto === '') { toastr.error('La Unidad Solicitante es requerida'); return; }
 
             if (accion === 'pdf') {
                 abrirPDFSinGuardar();
@@ -957,94 +925,57 @@
             ejecutarGuardar(accion);
         }
 
-        // ── PDF ACTA sin guardar ──────────────────────────────────────────
         function abrirPDFSinGuardar() {
-            var proyectoCerrado   = $('#select-proyecto').val();
-            var fecha             = document.getElementById('fecha').value;
-            var actaNumero        = $('#acta-numero').val().trim()                || '';
-            var actaReferencia    = $('#acta-referencia').val().trim()             || '';
-            var actaDepto         = $('#acta-departamento option:selected').text() || '';
-            var actaNombreSolic   = $('#acta-nombre-solicitante').val().trim()     || '';
-            var actaCargoSolic    = $('#acta-cargo-solicitante').val().trim()      || '';
-            var actaObservaciones = $('#acta-observaciones').val().trim()          || '';
-            var actaTipoDestino   = $('#acta-tipo-destino').val().trim()           || '';
-
             var materiales = [];
             $('#matriz > tbody > tr').each(function () {
-                var nombre       = $(this).find("input[type='text']").val();
-                var cantidad     = $(this).find("input[name='salidaArray[]']").attr('data-cantidadSalida');
-                var idEntradaDet = $(this).find("input[name='idmaterialArray[]']").attr('data-idmaterialArray');
-                materiales.push({ nombre: nombre, cantidad: cantidad, id_entrada_detalle: idEntradaDet });
+                materiales.push({
+                    nombre:             $(this).find("input[type='text']").val(),
+                    cantidad:           $(this).find("input[name='salidaArray[]']").attr('data-cantidadSalida'),
+                    id_entrada_detalle: $(this).find("input[name='idmaterialArray[]']").attr('data-idmaterialArray')
+                });
             });
 
-            var form = $('<form>', {
-                method: 'POST',
-                action: "{{ URL::to('admin/reporte/acta/preview') }}",
-                target: '_blank'
-            });
-
+            var form = $('<form>', { method: 'POST', action: "{{ URL::to('admin/reporte/acta/preview') }}", target: '_blank' });
             form.append($('<input>', { type: 'hidden', name: '_token',        value: "{{ csrf_token() }}" }));
-            form.append($('<input>', { type: 'hidden', name: 'idproy',        value: proyectoCerrado }));
-            form.append($('<input>', { type: 'hidden', name: 'fecha',         value: fecha }));
-            form.append($('<input>', { type: 'hidden', name: 'numero',        value: actaNumero }));
-            form.append($('<input>', { type: 'hidden', name: 'referencia',    value: actaReferencia }));
-            form.append($('<input>', { type: 'hidden', name: 'depto',         value: actaDepto }));
-            form.append($('<input>', { type: 'hidden', name: 'nombre',        value: actaNombreSolic }));
-            form.append($('<input>', { type: 'hidden', name: 'cargo',         value: actaCargoSolic }));
-            form.append($('<input>', { type: 'hidden', name: 'observaciones', value: actaObservaciones }));
-            form.append($('<input>', { type: 'hidden', name: 'tipodestino',   value: actaTipoDestino }));
+            form.append($('<input>', { type: 'hidden', name: 'idproy',        value: $('#select-proyecto').val() }));
+            form.append($('<input>', { type: 'hidden', name: 'fecha',         value: document.getElementById('fecha').value }));
+            form.append($('<input>', { type: 'hidden', name: 'numero',        value: $('#acta-numero').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'referencia',    value: $('#acta-referencia').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'depto',         value: $('#acta-departamento option:selected').text() }));
+            form.append($('<input>', { type: 'hidden', name: 'nombre',        value: $('#acta-nombre-solicitante').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'cargo',         value: $('#acta-cargo-solicitante').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'observaciones', value: $('#acta-observaciones').val().trim() }));
+            form.append($('<input>', { type: 'hidden', name: 'tipodestino',   value: $('#acta-tipo-destino').val().trim() }));
             form.append($('<input>', { type: 'hidden', name: 'materiales',    value: JSON.stringify(materiales) }));
-
-            $('body').append(form);
-            form.submit();
-            form.remove();
+            $('body').append(form); form.submit(); form.remove();
         }
 
-        // ── Ejecutar guardado en BD ───────────────────────────────────────
         function ejecutarGuardar(accion) {
-            var fecha           = document.getElementById('fecha').value;
-            var proyectoCerrado = $('#select-proyecto').val();
-            var descripcion     = document.getElementById('descripcion').value;
-            var proyectoDestino = $('#select-proyecto-destino').val();
-
-            var actaNumero         = $('#acta-numero').val().trim();
-            var actaReferencia     = $('#acta-referencia').val().trim();
-            var actaIdDepartamento = $('#acta-departamento').val();
-            var actaNombreSolic    = $('#acta-nombre-solicitante').val().trim();
-            var actaCargoSolic     = $('#acta-cargo-solicitante').val().trim();
-            var actaObservaciones  = $('#acta-observaciones').val().trim();
-            var actaTipoDestino    = $('#acta-tipo-destino').val().trim();
-
-            var idEntradaDetalle = $("input[name='idmaterialArray[]']")
-                .map(function () { return $(this).attr("data-idmaterialArray"); }).get();
-            var salidaCantidad = $("input[name='salidaArray[]']")
-                .map(function () { return $(this).attr("data-cantidadSalida"); }).get();
+            var idEntradaDetalle = $("input[name='idmaterialArray[]']").map(function () { return $(this).attr("data-idmaterialArray"); }).get();
+            var salidaCantidad   = $("input[name='salidaArray[]']").map(function () { return $(this).attr("data-cantidadSalida"); }).get();
 
             var contenedorArray = [];
             for (var p = 0; p < salidaCantidad.length; p++) {
-                contenedorArray.push({
-                    infoIdEntradaDeta: idEntradaDetalle[p],
-                    infoCantidad:      salidaCantidad[p],
-                });
+                contenedorArray.push({ infoIdEntradaDeta: idEntradaDetalle[p], infoCantidad: salidaCantidad[p] });
             }
 
             $('#modalActa').modal('hide');
             openLoading();
 
             var formData = new FormData();
-            formData.append('fecha',                fecha);
-            formData.append('proyecto_cerrado',     proyectoCerrado);
-            formData.append('proyecto_destino',     proyectoDestino || '');
-            formData.append('descripcion',          descripcion);
+            formData.append('fecha',                document.getElementById('fecha').value);
+            formData.append('proyecto_cerrado',     $('#select-proyecto').val());
+            formData.append('proyecto_destino',     $('#select-proyecto-destino').val() || '');
+            formData.append('descripcion',          document.getElementById('descripcion').value);
             formData.append('tipo_destino',         tipoDestino);
             formData.append('contenedorArray',      JSON.stringify(contenedorArray));
-            formData.append('acta_numero',          actaNumero);
-            formData.append('acta_referencia',      actaReferencia);
-            formData.append('acta_id_departamento', actaIdDepartamento || '');
-            formData.append('acta_nombre_solic',    actaNombreSolic);
-            formData.append('acta_cargo_solic',     actaCargoSolic);
-            formData.append('acta_observaciones',   actaObservaciones);
-            formData.append('acta_tipo_destino',    actaTipoDestino);
+            formData.append('acta_numero',          $('#acta-numero').val().trim());
+            formData.append('acta_referencia',      $('#acta-referencia').val().trim());
+            formData.append('acta_id_departamento', $('#acta-departamento').val() || '');
+            formData.append('acta_nombre_solic',    $('#acta-nombre-solicitante').val().trim());
+            formData.append('acta_cargo_solic',     $('#acta-cargo-solicitante').val().trim());
+            formData.append('acta_observaciones',   $('#acta-observaciones').val().trim());
+            formData.append('acta_tipo_destino',    $('#acta-tipo-destino').val().trim());
 
             axios.post(urlAdmin + '/admin/transferencia/material/xproyecto', formData)
                 .then((response) => {
@@ -1055,34 +986,25 @@
                     } else if (response.data.success === 3) {
                         Swal.fire({
                             title: 'Cantidad no disponible',
-                            html:  '<b>' + response.data.nombre_material + '</b><br><br>' +
+                            html: '<b>' + response.data.nombre_material + '</b><br><br>' +
                                 'Solicitado: <b>' + response.data.cantidad_pedida + '</b><br>' +
                                 'Disponible libre: <b>' + response.data.disponible + '</b>',
-                            icon:  'warning',
-                            confirmButtonColor: '#d33',
-                            confirmButtonText:  'Entendido'
+                            icon: 'warning', confirmButtonColor: '#d33', confirmButtonText: 'Entendido'
                         });
                     } else if (response.data.success === 10) {
                         var titulos = {
                             proyecto: 'Transferencia Registrada',
                             general:  'Salida General Registrada',
-                            reserva:  'Materiales Reservados',
+                            reserva:  'Materiales Reservados'
                         };
                         Swal.fire({
                             title: titulos[tipoDestino] || 'Guardado',
-                            icon:  'success',
-                            allowOutsideClick:  false,
+                            icon: 'success',
+                            allowOutsideClick: false,
                             confirmButtonColor: '#28a745',
-                            confirmButtonText:  'Aceptar'
+                            confirmButtonText: 'Aceptar'
                         }).then((r) => {
-                            if (r.isConfirmed) {
-                                if (accion === 'ambos' && response.data.id_salida) {
-                                    window.open(
-                                        urlAdmin + '/admin/reporte/acta/recepcion/' + response.data.id_salida
-                                    );
-                                }
-                                location.reload();
-                            }
+                            if (r.isConfirmed) location.reload();
                         });
                     } else {
                         toastr.error('Error al guardar');
@@ -1091,7 +1013,6 @@
                 .catch(() => { toastr.error('Error al guardar'); closeLoading(); });
         }
 
-        // ── Utilidades tabla ──────────────────────────────────────────────
         function borrarFila(elemento) {
             elemento.closest('tr').remove();
             setearFila();
@@ -1099,8 +1020,7 @@
         }
 
         function setearFila() {
-            var table  = document.getElementById('matriz');
-            var conteo = 0;
+            var table = document.getElementById('matriz'); var conteo = 0;
             for (var r = 1, n = table.rows.length; r < n; r++) {
                 conteo++;
                 table.rows[r].cells[0].children[0].innerHTML = conteo;
@@ -1111,6 +1031,5 @@
             var n = $('#matriz > tbody > tr').length;
             $('#contador-filas').text(n + (n === 1 ? ' ítem' : ' ítems'));
         }
-
     </script>
 @endsection
