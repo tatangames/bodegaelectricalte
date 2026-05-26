@@ -17,6 +17,9 @@ use App\Models\UnidadMedida;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ReportesController extends Controller
 {
@@ -371,8 +374,9 @@ class ReportesController extends Controller
     {
         $proyectos = Tipoproyecto::where('transferido', 0)->orderBy('nombre', 'ASC')->get();
         $transferido = Tipoproyecto::where('transferido', 1)->orderBy('nombre', 'ASC')->get();
+        $infoGeneral = InformacionGeneral::where('id', 1)->first();
 
-        return view('backend.admin.repuestos.reporte.vistaquetengoporproyecto', compact('proyectos', 'transferido'));
+        return view('backend.admin.repuestos.reporte.vistaquetengoporproyecto', compact('proyectos', 'transferido', 'infoGeneral'));
     }
 
     public function reporteQueTengoPorProyecto($idproy)
@@ -1594,16 +1598,21 @@ class ReportesController extends Controller
     }
 
 
+
+
+
     public function reporteDestinoSobrantes($idtrans, $tipo, Request $request)
     {
-        $infoProyecto = Tipoproyecto::find($idtrans);
+        $tipo = strtolower(trim($tipo));
+
+        $infoProyecto  = Tipoproyecto::find($idtrans);
         $fechaGenerado = date("d-m-Y");
-        $logoalcaldia = 'images/logo.png';
+        $logoalcaldia  = 'images/logo.png';
 
         $desde = $request->query('desde');
         $hasta = $request->query('hasta');
 
-        $transferencia = Transferencia::where('id_tipoproyecto', $idtrans)
+        $transferencia = Transferencia::where('id_tipoproyecto_origen', $idtrans)
             ->orderBy('id', 'desc')
             ->first();
 
@@ -1627,25 +1636,73 @@ Este proyecto no tiene registro de cierre generado.</p>", 2);
 
         $codigoPDF = 'GEAD-001-REPO';
 
-        // Etiqueta de tipo para el encabezado de datos
-        $colorTipo = $tipo === 'proyecto' ? '#000000' : '#000000';
+        $colorTipo = '#000000';
         $textoTipo = $tipo === 'proyecto'
             ? 'TRANSFERENCIA A PROYECTO DE INVERSIÓN PÚBLICA'
             : 'SALIDA GENERAL — MANTENIMIENTO DE INSTALACIONES MUNICIPALES';
 
-        $detallesSnapshot = TransferenciaDetalle::where('id_transferencia', $transferencia->id)
+        // ── Obtener los id_salida que SÍ corresponden a despachos de sobrantes ─
+        // El vínculo correcto es la tabla `transferencia`: cada despacho de
+        // sobrante (proyecto o general) genera un registro ahí con su id_salida
+        // y su tipo_salida. Una salida normal de operación NO tiene registro
+        // en `transferencia`, así que queda excluida sin depender de la fecha.
+        $tipoSalidaBuscado = $tipo === 'proyecto' ? 'proyecto' : 'general';
+
+        $idsSalidaValidos = Transferencia::where('id_tipoproyecto_origen', $idtrans)
+            ->where('tipo_salida', $tipoSalidaBuscado)
+            ->whereNotNull('id_salida')
+            ->pluck('id_salida')
+            ->toArray();
+
+        if (empty($idsSalidaValidos)) {
+            $mpdf = new \Mpdf\Mpdf(['tempDir' => sys_get_temp_dir(), 'format' => 'LETTER-L']);
+            $mpdf->WriteHTML("<p style='font-family:Arial; font-size:14px; color:#888; padding:20px;'>
+No hay registros para este proyecto en el rango de fechas seleccionado.</p>", 2);
+            $mpdf->Output();
+            return;
+        }
+
+        // ── Salidas reales, limitadas a los despachos de sobrantes ────────────
+        $salidasQuery = SalidasDetalle::whereHas('salida', function ($q) use ($idsSalidaValidos, $idtrans, $tipo, $desde, $hasta) {
+            $q->whereIn('id', $idsSalidaValidos)
+                ->where('id_tipoproyecto', $idtrans);
+
+            if ($tipo === 'proyecto') {
+                $q->where('es_transferencia', true)
+                    ->whereNotNull('id_tipoproyecto_transferencia');
+            } elseif ($tipo === 'general') {
+                $q->where(function ($sub) {
+                    $sub->where('es_transferencia', false)
+                        ->orWhereNull('es_transferencia');
+                })
+                    ->whereNull('id_tipoproyecto_transferencia');
+            } else {
+                $q->whereRaw('1 = 0');
+            }
+
+            if ($desde) $q->whereDate('fecha', '>=', $desde);
+            if ($hasta) $q->whereDate('fecha', '<=', $hasta);
+        })
+            ->with([
+                'salida',
+                'entradaDetalle.material.unidadMedida',
+                'entradaDetalle.material.objetoEspecifico',
+            ])
             ->get();
 
+        // ── Agrupar por salida ────────────────────────────────────────────────
         $porSalida = [];
 
-        foreach ($detallesSnapshot as $det) {
+        foreach ($salidasQuery as $sd) {
 
-            $entradaDet = EntradasDetalle::with('material.unidadMedida', 'material.objetoEspecifico')
-                ->find($det->id_entrada_detalle);
+            if ($sd->cantidad_salida <= 0) continue;
 
+            $idSalida   = $sd->salida->id;
+            $entradaDet = $sd->entradaDetalle;
+            $material   = $entradaDet?->material;
+
+            // Código del objeto específico
             $codigoObjEsp = '—';
-            $material = $entradaDet?->material;
-
             if ($material) {
                 if ($material->relationLoaded('objetoEspecifico') && $material->objetoEspecifico) {
                     $codigoObjEsp = $material->objetoEspecifico->codigo ?? '—';
@@ -1657,54 +1714,29 @@ Este proyecto no tiene registro de cierre generado.</p>", 2);
                 }
             }
 
-            $salidas = SalidasDetalle::where('id_entrada_detalle', $det->id_entrada_detalle)
-                ->whereHas('salida', function ($q) use ($idtrans, $tipo, $desde, $hasta) {
-                    $q->where('id_tipoproyecto', $idtrans);
+            // Cabecera de la salida (una sola vez)
+            if (!isset($porSalida[$idSalida])) {
+                $proyectoDestNombre = $sd->salida->id_tipoproyecto_transferencia
+                    ? (Tipoproyecto::find($sd->salida->id_tipoproyecto_transferencia)?->nombre ?? '—')
+                    : 'MANTENIMIENTO DE INSTALACIONES MUNICIPALES';
 
-                    if ($tipo === 'proyecto') {
-                        $q->where('es_transferencia', true)
-                            ->whereNotNull('id_tipoproyecto_transferencia');
-                    } elseif ($tipo === 'general') {
-                        $q->where(function ($sub) {
-                            $sub->where('es_transferencia', false)
-                                ->orWhereNull('es_transferencia');
-                        })
-                            ->whereNull('id_tipoproyecto_transferencia');
-                    }
-
-                    if ($desde) $q->whereDate('fecha', '>=', $desde);
-                    if ($hasta) $q->whereDate('fecha', '<=', $hasta);
-                })
-                ->with('salida')
-                ->get();
-
-            $cantDespachada = $salidas->sum('cantidad_salida');
-            if ($cantDespachada <= 0) continue;
-
-            foreach ($salidas as $sd) {
-                $idSalida = $sd->salida->id;
-
-                if (!isset($porSalida[$idSalida])) {
-                    $proyectoDestNombre = $sd->salida->id_tipoproyecto_transferencia
-                        ? (Tipoproyecto::find($sd->salida->id_tipoproyecto_transferencia)?->nombre ?? '—')
-                        : 'MANTENIMIENTO DE INSTALACIONES MUNICIPALES';
-
-                    $porSalida[$idSalida] = [
-                        'fecha'            => date('d/m/Y', strtotime($sd->salida->fecha)),
-                        'descripcion'      => $sd->salida->descripcion ?? '—',
-                        'proyecto_destino' => $proyectoDestNombre,
-                        'materiales'       => [],
-                    ];
-                }
-
-                $porSalida[$idSalida]['materiales'][] = [
-                    'nombre'          => $entradaDet?->material?->nombre ?? $det->nombre_material ?? '—',
-                    'medida'          => $entradaDet?->material?->unidadMedida?->nombre ?? '—',
-                    'codigo'          => $codigoObjEsp,
-                    'cant_despachada' => $sd->cantidad_salida,
-                    'precio'          => $det->precio,
+                $porSalida[$idSalida] = [
+                    'fecha'            => date('d/m/Y', strtotime($sd->salida->fecha)),
+                    'descripcion'      => $sd->salida->descripcion ?? '—',
+                    'proyecto_destino' => $proyectoDestNombre,
+                    'materiales'       => [],
                 ];
             }
+
+            $precio = $entradaDet?->precio ?? 0;
+
+            $porSalida[$idSalida]['materiales'][] = [
+                'nombre'          => $material?->nombre ?? $entradaDet?->nombre ?? '—',
+                'medida'          => $material?->unidadMedida?->nombre ?? '—',
+                'codigo'          => $codigoObjEsp,
+                'cant_despachada' => $sd->cantidad_salida,
+                'precio'          => $precio,
+            ];
         }
 
         if (empty($porSalida)) {
@@ -1773,7 +1805,7 @@ No hay registros para este proyecto en el rango de fechas seleccionado.</p>", 2)
 </tr>
 </table><br>";
 
-        // ── Datos generales con tipo de reporte debajo de Proyecto de origen ─
+        // ── Datos generales ───────────────────────────────────────────────────
         $tabla .= "
 <table width='100%' style='margin-bottom:8px; border-collapse:collapse;'>
 <tr>
@@ -1811,16 +1843,14 @@ No hay registros para este proyecto en el rango de fechas seleccionado.</p>", 2)
 
             $subtotalSalida = 0;
 
-            // Cabecera de la salida: fecha + descripción siempre
-            // Si es tipo 'proyecto' agrega fila con proyecto destino
             $filaDestino = $tipo === 'proyecto'
                 ? "<tr>
-                <td colspan='2' style='font-size:12px; padding:4px 6px;
-                                       border:0.8px solid #000; background:#f2f4f8;'>
-                    <span style='font-weight:bold;'>Proyecto destino:</span>
-                    {$salida['proyecto_destino']}
-                </td>
-               </tr>"
+            <td colspan='2' style='font-size:12px; padding:4px 6px;
+                                   border:0.8px solid #000; background:#f2f4f8;'>
+                <span style='font-weight:bold;'>Proyecto destino:</span>
+                {$salida['proyecto_destino']}
+            </td>
+           </tr>"
                 : "";
 
             $tabla .= "
@@ -1995,7 +2025,6 @@ No hay registros para este proyecto en el rango de fechas seleccionado.</p>", 2)
         $mpdf->WriteHTML($tabla, 2);
         $mpdf->Output();
     }
-
 
 
 
@@ -3860,6 +3889,39 @@ No hay registros para este proyecto en el rango de fechas seleccionado.</p>", 2)
         $mpdf->WriteHTML($html, \Mpdf\HTMLParserMode::HTML_BODY);
         $mpdf->Output();
     }
+
+
+    public function actualizarPxInformacionGeneral(Request $request)
+    {
+        $rules = [
+            'px_firmas'        => 'required|integer|min:0',
+            'px_observaciones' => 'required|integer|min:0',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return ['success' => 0];
+        }
+
+        try {
+            $info = InformacionGeneral::find(1);
+
+            if (!$info) {
+                return ['success' => 0];
+            }
+
+            $info->px_firmas        = (int) $request->px_firmas;
+            $info->px_observaciones = (int) $request->px_observaciones;
+            $info->save();
+
+            return ['success' => 1];
+
+        } catch (\Throwable $e) {
+            Log::error('actualizarPxInformacionGeneral: ' . $e->getMessage());
+            return ['success' => 99];
+        }
+    }
+
 
 
 

@@ -21,6 +21,9 @@ return new class extends Migration
             // SABER A DONDE MANDE ESTE MATERIAL (X PROYECTO)
             $table->bigInteger('id_tipoproyecto_transferencia')->unsigned()->nullable();
 
+            $table->bigInteger('id_reserva')->unsigned()->nullable();
+
+
 
             $table->string('acta_numero', 50)->nullable()->after('descripcion');
             $table->string('acta_referencia', 200)->nullable()->after('acta_numero');
@@ -30,7 +33,7 @@ return new class extends Migration
             $table->text('acta_observaciones')->nullable()->after('acta_cargo_solic');
             $table->string('acta_tipo_destino', 300)->nullable()->after('acta_observaciones');
 
-
+            $table->foreign('id_reserva')->references('id')->on('reservas');
             $table->foreign('id_tipoproyecto')->references('id')->on('tipoproyecto');
             $table->foreign('id_tipoproyecto_transferencia')->references('id')->on('tipoproyecto');
         });

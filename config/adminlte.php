@@ -339,6 +339,12 @@ return [
                     'icon' => 'far fa-circle',
                     'route' => 'admin.transferencias.index',
                 ],
+
+                [
+                    'text' => 'Reservas Pendientes',
+                    'icon' => 'far fa-circle',
+                    'route' => 'admin.reservas.index',
+                ],
             ],
         ],
 
@@ -354,7 +360,7 @@ return [
                     'route' => 'admin.unidadmedida.index',
                 ],
                 [
-                    'text' => 'Materiales',
+                    'text' => 'Catálogo de Materiales',
                     'icon' => 'far fa-circle',
                     'route' => 'admin.materiales.index',
                 ],
@@ -363,31 +369,25 @@ return [
                     'icon' => 'far fa-circle',
                     'route' => 'admin.transferencias.materiales.index',
                 ],
-                [
-                    'text' => 'Reservas Pendientes',
-                    'icon' => 'far fa-circle',
-                    'route' => 'admin.reservas.index',
-                ],
+
             ],
         ],
 
         [
-            'text'    => 'Registro de Materiales',
+            'text'    => 'Entradas y Salidas',
             'icon'    => 'fas fa-pen-alt',
             'can'     => 'sidebar.inventario',
             'submenu' => [
                 [
-                    'text' => 'Entradas',
+                    'text' => 'Registro de Entradas',
                     'icon' => 'far fa-circle',
                     'route' => 'admin.entrada.registro.index',
                 ],
                 [
-                    'text' => 'Salidas',
+                    'text' => 'Registro de Salidas',
                     'icon' => 'far fa-circle',
                     'route' => 'admin.salida.registro.index',
                 ],
-
-
             ],
         ],
 

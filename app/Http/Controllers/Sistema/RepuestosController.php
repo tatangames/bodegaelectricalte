@@ -295,7 +295,9 @@ class RepuestosController extends Controller
                 'salidas'         => $sal,
                 'disponible'      => $dato['entradas'] - $sal,
             ];
-        })->values();
+        })
+            ->filter(fn($p) => $p['disponible'] != 0)  // ← solo los que tienen disponible
+            ->values();
 
         // ── Totales ───────────────────────────────────────────────
         // El total general usa SOLO las entradas reales (el material físico

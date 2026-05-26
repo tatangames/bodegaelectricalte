@@ -15,15 +15,12 @@ return new class extends Migration
             $table->id();
 
             $table->bigInteger('id_tipoproyecto_origen')->unsigned()->nullable()->after('id_tipoproyecto');
-
             $table->bigInteger('id_salida')->unsigned()->nullable();
             $table->bigInteger('id_entrada')->unsigned()->nullable();
-
             $table->bigInteger('id_tipoproyecto')->unsigned()->nullable();
             $table->date('fecha');
             $table->string('descripcion', 800)->nullable();
             $table->string('documento', 100)->nullable();
-
             $table->enum('tipo_salida', [
                 'proyecto',
                 'general',

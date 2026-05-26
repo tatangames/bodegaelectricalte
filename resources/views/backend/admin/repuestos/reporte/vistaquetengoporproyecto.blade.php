@@ -242,6 +242,49 @@
                     </div>
 
 
+
+                    {{-- ══ CONFIGURACIÓN: Distancias del Reporte (píxeles) ══ --}}
+                    <div class="col-md-6">
+                        <div class="reporte-card">
+                            <div class="reporte-header completado">
+                                <i class="fas fa-sliders-h"></i>
+                                <h5>Configuración de Distancias del Reporte</h5>
+                            </div>
+                            <div class="reporte-body">
+                                <p style="font-size:13px; color:#666; margin-bottom:14px;">
+                                    Ajusta el espacio en píxeles que se reserva para las firmas y
+                                    para el bloque de observaciones en los reportes PDF.
+                                </p>
+                                <hr class="divider">
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="field-label">
+                                            <i class="fas fa-signature mr-1"></i>Píxeles Firmas
+                                        </label>
+                                        <input type="number" min="0" class="form-control" id="config-px-firmas"
+                                               value="{{ $infoGeneral->px_firmas ?? 0 }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="field-label">
+                                            <i class="fas fa-align-left mr-1"></i>Píxeles Observaciones
+                                        </label>
+                                        <input type="number" min="0" class="form-control" id="config-px-observaciones"
+                                               value="{{ $infoGeneral->px_observaciones ?? 0 }}">
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <button type="button" onclick="actualizarPxConfig()" class="btn-pdf morado">
+                                        <i class="fas fa-save"></i>
+                                        Guardar Cambios
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
         </section>
@@ -310,5 +353,43 @@
 
             window.open(url);
         }
+
+        function actualizarPxConfig() {
+            var pxFirmas        = $('#config-px-firmas').val();
+            var pxObservaciones = $('#config-px-observaciones').val();
+
+            if (pxFirmas === '' || pxObservaciones === '') {
+                toastr.error('Ambos campos de píxeles son requeridos');
+                return;
+            }
+            if (parseInt(pxFirmas) < 0 || parseInt(pxObservaciones) < 0) {
+                toastr.error('Los valores no pueden ser negativos');
+                return;
+            }
+
+            axios.post("{{ route('admin.informacion.actualizar.px') }}", {
+                _token:           '{{ csrf_token() }}',
+                px_firmas:        pxFirmas,
+                px_observaciones: pxObservaciones
+            })
+                .then(function (response) {
+                    if (response.data.success === 1) {
+                        toastr.success('Configuración actualizada correctamente');
+                    } else {
+                        toastr.error('No se pudo actualizar la configuración');
+                    }
+                })
+                .catch(function () {
+                    toastr.error('Ocurrió un error al guardar');
+                });
+        }
+
+
+
+
+
+
+
+
     </script>
 @endsection

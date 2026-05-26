@@ -34,4 +34,9 @@ class Salidas extends Model
     {
         return $this->belongsTo(Tipoproyecto::class, 'id_tipoproyecto_transferencia');
     }
+
+    public function reserva()
+    {
+        return $this->belongsTo(Reserva::class, 'id_reserva');
+    }
 }

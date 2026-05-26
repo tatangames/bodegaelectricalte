@@ -19,7 +19,6 @@ return new class extends Migration
 
             $table->foreign('id_salida')->references('id')->on('salidas');
             $table->foreign('id_entrada_detalle')->references('id')->on('entradas_detalle');
-
         });
     }
 
