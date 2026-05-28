@@ -367,6 +367,18 @@
                         toastr.success('Salida actualizada correctamente');
                         $('#modalEditar').modal('hide');
                         recargar();
+                    } else if (response.data.success === 2) {
+                        Swal.fire({
+                            title: 'Fecha inválida',
+                            html:
+                                'El material <b>' + response.data.nombre_material + '</b> ' +
+                                'tiene fecha de ingreso <b>' + response.data.fecha_ingreso + '</b>.<br><br>' +
+                                'La fecha de salida (<b>' + response.data.fecha_salida + '</b>) ' +
+                                'no puede ser anterior al ingreso.',
+                            icon: 'warning',
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'Entendido'
+                        });
                     } else {
                         toastr.error('Error al actualizar');
                     }

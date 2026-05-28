@@ -195,9 +195,6 @@ class RepuestosController extends Controller
     // GUARDAR ENTRADAS
     public function guardarEntrada(Request $request)
     {
-
-
-
         $rules = [
             'fecha'     => 'required',
             'tipoproyecto' => 'required',

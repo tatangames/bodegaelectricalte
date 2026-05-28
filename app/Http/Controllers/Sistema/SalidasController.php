@@ -215,18 +215,17 @@ class SalidasController extends Controller
         DB::beginTransaction();
 
         try {
-
-            // ✅ Validar con cantidades ya acumuladas
             $fila = 1;
+            // ── Validar disponibilidad ──
             foreach ($agrupado as $idEntradaDetalle => $cantidadSalida) {
 
                 $disponible = DB::table('entradas_detalle as ed')
                     ->leftJoin(
                         DB::raw('(
-                        SELECT id_entrada_detalle, SUM(cantidad_salida) as total_salido
-                        FROM salidas_detalle
-                        GROUP BY id_entrada_detalle
-                    ) as sd'),
+                SELECT id_entrada_detalle, SUM(cantidad_salida) as total_salido
+                FROM salidas_detalle
+                GROUP BY id_entrada_detalle
+            ) as sd'),
                         'sd.id_entrada_detalle', '=', 'ed.id'
                     )
                     ->where('ed.id', $idEntradaDetalle)
@@ -249,6 +248,29 @@ class SalidasController extends Controller
                         'disponible'      => (int) $disponible,
                     ];
                 }
+
+                // ── 🆕 Validar que la fecha de salida no sea anterior a la fecha de ingreso ──
+                $fechaIngreso = DB::table('entradas_detalle as ed')
+                    ->join('entradas as e', 'e.id', '=', 'ed.id_entradas')
+                    ->where('ed.id', $idEntradaDetalle)
+                    ->value('e.fecha');
+
+                if ($fechaIngreso && Carbon::parse($request->fecha)->lt(Carbon::parse($fechaIngreso))) {
+                    DB::rollback();
+
+                    $nombreMaterial = DB::table('entradas_detalle as ed')
+                        ->join('materiales as m', 'm.id', '=', 'ed.id_material')
+                        ->where('ed.id', $idEntradaDetalle)
+                        ->value('m.nombre');
+
+                    return [
+                        'success'          => 4,
+                        'nombre_material'  => $nombreMaterial ?? 'Material desconocido',
+                        'fecha_salida'     => Carbon::parse($request->fecha)->format('d-m-Y'),
+                        'fecha_ingreso'    => Carbon::parse($fechaIngreso)->format('d-m-Y'),
+                    ];
+                }
+                // ─────────────────────────────────────────────────────────────────────────
 
                 $fila++;
             }

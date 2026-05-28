@@ -621,6 +621,19 @@
                     else if (response.data.success === 3) {
                         toastr.error("El proyecto esta Cerrado")
                     }
+                    else if (response.data.success === 4) {
+                        Swal.fire({
+                            title: 'Fecha inválida',
+                            html:
+                                'El material <b>' + response.data.nombre_material + '</b> ' +
+                                'tiene fecha de ingreso <b>' + response.data.fecha_ingreso + '</b>.<br><br>' +
+                                'La fecha de salida (<b>' + response.data.fecha_salida + '</b>) ' +
+                                'no puede ser anterior al ingreso.',
+                            icon: 'warning',
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
                     else if (response.data.success === 10) {msgActualizado(); }
                     else                                   { toastr.error('Error al guardar'); }
                 })

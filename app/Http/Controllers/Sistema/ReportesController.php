@@ -1393,7 +1393,6 @@ class ReportesController extends Controller
             $mpdf->showImageErrors = false;
 
             $tabla = $encabezado;
-            $tabla .= "<p style='font-size:15px;'><span style='font-weight:bold;'>Proyecto:</span> {$infoProyecto->nombre}</p>";
 
             foreach ($arrayEntradas as $entrada) {
 

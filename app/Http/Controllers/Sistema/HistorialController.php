@@ -453,6 +453,27 @@ class HistorialController extends Controller
             return response()->json(['success' => 0]);
         }
 
+        // ── Validar que la nueva fecha no sea anterior al ingreso de ningún ítem ──
+        $entradaConflicto = DB::table('salidas_detalle as sd')
+            ->join('entradas_detalle as ed', 'ed.id', '=', 'sd.id_entrada_detalle')
+            ->join('entradas as e',          'e.id',  '=', 'ed.id_entradas')
+            ->join('materiales as m',        'm.id',  '=', 'ed.id_material')
+            ->where('sd.id_salida', $salida->id)
+            ->where('e.fecha', '>', $request->fecha)   // ingreso posterior a la nueva fecha
+            ->orderBy('e.fecha', 'desc')
+            ->select('m.nombre as nombre_material', 'e.fecha as fecha_ingreso')
+            ->first();
+
+        if ($entradaConflicto) {
+            return response()->json([
+                'success'         => 2,
+                'nombre_material' => $entradaConflicto->nombre_material,
+                'fecha_salida'    => Carbon::parse($request->fecha)->format('d-m-Y'),
+                'fecha_ingreso'   => Carbon::parse($entradaConflicto->fecha_ingreso)->format('d-m-Y'),
+            ]);
+        }
+        // ─────────────────────────────────────────────────────────────────────────
+
         $salida->fecha       = $request->fecha;
         $salida->descripcion = $request->descripcion ?: null;
         $salida->save();
