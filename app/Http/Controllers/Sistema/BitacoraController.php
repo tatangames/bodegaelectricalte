@@ -602,75 +602,122 @@ class BitacoraController extends Controller
                 $coordenadas = $bitacora->latitud . ', ' . $bitacora->longitud;
             }
 
-            $tabla .= "
-<table width='100%' style='border-collapse:collapse; font-family:Arial, sans-serif; margin-bottom:2px;'>
-    <tr>
-        <td style='
-            background-color:#2874a6;
-            color:#ffffff;
-            font-weight:bold;
-            font-size:12px;
-            padding:5px 10px;
-            text-align:left;
-        '>
-            BITÁCORA #{$contador} — {$fechaFmt}
-        </td>
-    </tr>
-</table>";
+
 
             $tabla .= "
-<table width='100%' id='tablaFor' style='margin-bottom:2px;'>
+<table width='100%' id='tablaFor'
+style='border-collapse:collapse; table-layout:fixed; font-family:Arial, sans-serif; margin:0;'>
     <tbody>
+
         <tr>
-            <td style='font-weight:bold; width:15%; font-size:11px; background:#f5f5f5; padding:4px 6px;'>Fecha</td>
-            <td style='width:20%; font-size:11px; padding:4px 6px;'>{$fechaFmt}</td>
-            <td style='font-weight:bold; width:18%; font-size:11px; background:#f5f5f5; padding:4px 6px;'>Tiempo Utilizado</td>
-            <td style='width:47%; font-size:11px; padding:4px 6px;'>{$tiempo}</td>
+            <td style='width:15%; font-weight:bold; font-size:11px; background:#f5f5f5;
+                       padding:4px; border:0.5px solid #ccc; text-align:left;'>
+                Fecha
+            </td>
+
+            <td style='width:20%; font-size:11px;
+                       padding:4px; border:0.5px solid #ccc; text-align:left;'>
+                {$fechaFmt}
+            </td>
+
+            <td style='width:18%; font-weight:bold; font-size:11px; background:#f5f5f5;
+                       padding:4px; border:0.5px solid #ccc; text-align:left;'>
+                Tiempo Utilizado
+            </td>
+
+            <td style='width:47%; font-size:11px;
+                       padding:4px; border:0.5px solid #ccc; text-align:left;'>
+                {$tiempo}
+            </td>
         </tr>
+
         <tr>
-            <td style='font-weight:bold; font-size:11px; background:#f5f5f5; padding:4px 6px;'>Nombre</td>
-            <td colspan='3' style='font-size:11px; padding:4px 6px;'>{$nombre}</td>
+            <td style='font-weight:bold; font-size:11px; background:#f5f5f5;
+                       padding:4px; border:0.5px solid #ccc; text-align:left;'>
+                Nombre
+            </td>
+
+            <td colspan='3'
+                style='font-size:11px; padding:4px;
+                       border:0.5px solid #ccc; text-align:left;'>
+                {$nombre}
+            </td>
         </tr>
+
         <tr>
-            <td style='font-weight:bold; font-size:11px; background:#f5f5f5; padding:4px 6px;'>Empleados</td>
-            <td colspan='3' style='font-size:11px; padding:4px 6px;'>{$listaEmpleados}</td>
+            <td style='font-weight:bold; font-size:11px; background:#f5f5f5;
+                       padding:4px; border:0.5px solid #ccc; text-align:left;'>
+                Empleados
+            </td>
+
+            <td colspan='3'
+                style='font-size:11px; padding:4px;
+                       border:0.5px solid #ccc; text-align:left;'>
+                {$listaEmpleados}
+            </td>
         </tr>
+
         <tr>
-            <td style='font-weight:bold; font-size:11px; background:#f5f5f5; padding:4px 6px;'>Ubicación</td>
-            <td colspan='3' style='font-size:11px; padding:4px 6px;'>{$ubicacion}</td>
+            <td style='font-weight:bold; font-size:11px; background:#f5f5f5;
+                       padding:4px; border:0.5px solid #ccc; text-align:left;'>
+                Ubicación
+            </td>
+
+            <td colspan='3'
+                style='font-size:11px; padding:4px;
+                       border:0.5px solid #ccc; text-align:left;'>
+                {$ubicacion}
+            </td>
         </tr>";
 
             if (!empty($coordenadas)) {
                 $tabla .= "
         <tr>
-            <td style='font-weight:bold; font-size:11px; background:#f5f5f5; padding:4px 6px;'>Coordenadas</td>
-            <td colspan='3' style='font-size:11px; padding:4px 6px;'>{$coordenadas}</td>
+            <td style='font-weight:bold; font-size:11px; background:#f5f5f5;
+                       padding:4px; border:0.5px solid #ccc; text-align:left;'>
+                Coordenadas
+            </td>
+
+            <td colspan='3'
+                style='font-size:11px; padding:4px;
+                       border:0.5px solid #ccc; text-align:left;'>
+                {$coordenadas}
+            </td>
         </tr>";
             }
 
+// DESCRIPCIÓN DENTRO DE LA MISMA TABLA
             $tabla .= "
-    </tbody>
-</table>";
+                    <tr>
+                        <td style='font-weight:bold; font-size:11px; background:#f5f5f5;
+                                   padding:4px; border:0.5px solid #ccc;
+                                   text-align:left; vertical-align:top;'>
+                            Descripción
+                        </td>
 
-            $tabla .= "
-<table width='100%' style='border-collapse:collapse; font-family:Arial, sans-serif; margin-bottom:2px;'>
-    <tr>
-        <td style='font-weight:bold; font-size:11px; background:#f5f5f5; border:0.5px solid #ccc; padding:4px 6px; width:15%;'>Descripción</td>
-        <td style='font-size:11px; border:0.5px solid #ccc; padding:6px 8px; line-height:1.5;'>{$descripcion}</td>
-    </tr>
-</table>";
+                        <td colspan='3'
+                            style='font-size:11px; padding:6px;
+                                   border:0.5px solid #ccc;
+                                   text-align:left; vertical-align:top;
+                                   line-height:1.5;'>
+                            {$descripcion}
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>";
 
             // ── Fotos en 2 columnas ─────────────────────────
             if ($incluirFotos && $bitacora->fotos && $bitacora->fotos->count() > 0) {
-                $cantFotos = $bitacora->fotos->count();
+
+                // Título de anexos
                 $tabla .= "
-<table width='100%' style='border-collapse:collapse; font-family:Arial, sans-serif; margin-bottom:2px;'>
-    <tr>
-        <td style='font-weight:bold; font-size:11px; background:#f5f5f5; border:0.5px solid #ccc; padding:4px 6px;'>
-            Fotografías ({$cantFotos})
-        </td>
-    </tr>
-</table>";
+                <div style='margin-top:8px; margin-bottom:6px;'>
+                    <span style='font-size:13px; font-weight:bold;'>
+                        ANEXOS FOTOGRAFICO
+                    </span>
+                    <hr style='border:0; border-top:1px solid #ccc; margin-top:4px;'>
+                </div>";
 
                 $tabla .= "<table width='100%' style='border-collapse:collapse; margin-bottom:2px;'>";
 
@@ -687,18 +734,18 @@ class BitacoraController extends Controller
 
                     if (file_exists($rutaFoto)) {
                         $tabla .= "
-    <td style='width:50%; padding:6px; text-align:center; vertical-align:top;'>
-        <img src='{$rutaFoto}' style='max-width:260px; max-height:220px; border:1px solid #ccc; border-radius:4px;'>
-        <br>
-        <span style='font-size:9px; color:#888;'>Foto " . ($i + 1) . "</span>
-    </td>";
-                    } else {
-                        $tabla .= "
-    <td style='width:50%; padding:6px; text-align:center; vertical-align:top;'>
-        <span style='font-size:10px; color:#999; font-style:italic;'>[Imagen no disponible]</span>
-        <br>
-        <span style='font-size:9px; color:#888;'>Foto " . ($i + 1) . "</span>
-    </td>";
+                        <td style='width:50%; padding:6px; text-align:center; vertical-align:top;'>
+                            <img src='{$rutaFoto}' style='max-width:260px; max-height:220px; border:1px solid #ccc; border-radius:4px;'>
+                            <br>
+                            <span style='font-size:9px; color:#888;'>Foto " . ($i + 1) . "</span>
+                        </td>";
+                                        } else {
+                                            $tabla .= "
+                        <td style='width:50%; padding:6px; text-align:center; vertical-align:top;'>
+                            <span style='font-size:10px; color:#999; font-style:italic;'>[Imagen no disponible]</span>
+                            <br>
+                            <span style='font-size:9px; color:#888;'>Foto " . ($i + 1) . "</span>
+                        </td>";
                     }
 
                     if ($i % 2 === 1 || $i === $totalFotos - 1) {
@@ -717,13 +764,13 @@ class BitacoraController extends Controller
 
         if ($arrayBitacoras->count() === 0) {
             $tabla .= "
-<table width='100%' style='margin-top:20px;'>
-    <tr>
-        <td style='text-align:center; font-size:14px; color:#999; padding:40px;'>
-            No se encontraron bitácoras con los filtros seleccionados.
-        </td>
-    </tr>
-</table>";
+            <table width='100%' style='margin-top:20px;'>
+                <tr>
+                    <td style='text-align:center; font-size:14px; color:#999; padding:40px;'>
+                        No se encontraron bitácoras con los filtros seleccionados.
+                    </td>
+                </tr>
+            </table>";
         }
 
         $stylesheet = file_get_contents('css/cssregistro.css');
