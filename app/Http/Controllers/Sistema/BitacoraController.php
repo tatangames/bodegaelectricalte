@@ -139,7 +139,7 @@ class BitacoraController extends Controller
     {
         $arrayEmpleados = Empleado::orderBy('nombre')->get();
 
-        return view('backend.bitacoras.historial.vistaHistorialBitacoras', compact('arrayEmpleados'));
+        return view('backend.bitacoras.historial.vistahistorialbitacoras', compact('arrayEmpleados'));
     }
 
     /**
@@ -168,7 +168,7 @@ class BitacoraController extends Controller
 
         $arrayBitacoras = $query->orderBy('fecha', 'DESC')->get();
 
-        return view('backend.bitacoras.historial.tablaHistorialBitacoras', compact('arrayBitacoras'));
+        return view('backend.bitacoras.historial.tablahistorialbitacoras', compact('arrayBitacoras'));
     }
 
     /**
