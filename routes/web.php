@@ -200,7 +200,9 @@ Route::middleware('auth:admin')->group(function () {
         ->name('reporte.form001.reserva.preview');
 
 
-
+    Route::post('/admin/reporte/acta/preview/reserva',
+        [ReportesController::class, 'actaRecepcionPreviewReserva'])
+        ->name('reporte.acta.preview');
 
 
 
