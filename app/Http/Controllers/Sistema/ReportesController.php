@@ -6881,7 +6881,7 @@ padding:5px 4px; background:#d9e1f2; text-align:center;";
             </tr>
             <tr>
                 <td width='40%' style='text-align:center;'>
-                    <strong>JEFE ESTRUCTURAS METALICAS</strong>
+                    <strong>JEFE UNIDAD INGENIERIA ELECTRICA</strong>
                 </td>
                 <td width='60%'></td>
             </tr>
