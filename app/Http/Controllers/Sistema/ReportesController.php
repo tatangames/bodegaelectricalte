@@ -5723,7 +5723,7 @@ padding:5px 4px; background:#d9e1f2; text-align:center;";
         // ===================================================================
         $havingExtra = $mostrarCero
             ? ''
-            : 'AND SUM(b.saldo_final_cant) <> 0';
+            : 'AND NOT (SUM(b.saldo_final_cant) = 0 AND SUM(b.entradas_mes_cant) = 0 AND SUM(b.salidas_mes_cant) = 0)';
 
         // ===================================================================
         //  CONSULTA
@@ -6784,15 +6784,15 @@ padding:5px 4px; background:#d9e1f2; text-align:center;";
             <table width='100%' style='font-size:10px;'>
                 <tr>
                     <td width='40%' style='border-right:0.8px solid #000; border-bottom:0.8px solid #000; padding:4px 6px;'><strong>Código:</strong></td>
-                    <td width='60%' style='border-bottom:0.8px solid #000; padding:4px 6px; text-align:center;'>ESTM-001-FORM</td>
+                    <td width='60%' style='border-bottom:0.8px solid #000; padding:4px 6px; text-align:center;'></td>
                 </tr>
                 <tr>
                     <td style='border-right:0.8px solid #000; border-bottom:0.8px solid #000; padding:4px 6px;'><strong>Versión:</strong></td>
-                    <td style='border-bottom:0.8px solid #000; padding:4px 6px; text-align:center;'>001</td>
+                    <td style='border-bottom:0.8px solid #000; padding:4px 6px; text-align:center;'></td>
                 </tr>
                 <tr>
                     <td style='border-right:0.8px solid #000; padding:4px 6px;'><strong>Fecha de vigencia:</strong></td>
-                    <td style='padding:4px 6px; text-align:center;'>08/04/2026</td>
+                    <td style='padding:4px 6px; text-align:center;'></td>
                 </tr>
             </table>
         </td>
