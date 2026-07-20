@@ -686,7 +686,7 @@ class ReportesController extends Controller
                         <strong>Versión:</strong>
                     </td>
                     <td style='border-bottom:0.8px solid #000;
-                               padding:4px 6px; text-align:center;'>000</td>
+                               padding:4px 6px; text-align:center;'></td>
                 </tr>
                 <tr>
                     <td style='border-right:0.8px solid #000; padding:4px 6px;'>
