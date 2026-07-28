@@ -132,6 +132,44 @@ class RepuestosController extends Controller
     }
 
 
+    public function eliminar(Request $request)
+    {
+        $id = $request->id;
+
+        // Verificar si tiene entradas
+        $tieneEntradas = DB::table('entradas_detalle')
+            ->where('id_material', $id)
+            ->exists();
+
+        if ($tieneEntradas) {
+            return response()->json([
+                'success' => 0,
+                'mensaje' => 'Este material tiene entradas registradas y no puede eliminarse.'
+            ]);
+        }
+
+        // Verificar si tiene salidas (a través de entradas_detalle)
+        $tieneSalidas = DB::table('salidas_detalle')
+            ->whereIn('id_entrada_detalle', function ($query) use ($id) {
+                $query->select('id')
+                    ->from('entradas_detalle')
+                    ->where('id_material', $id);
+            })
+            ->exists();
+
+        if ($tieneSalidas) {
+            return response()->json([
+                'success' => 0,
+                'mensaje' => 'Este material tiene salidas registradas y no puede eliminarse.'
+            ]);
+        }
+
+        Materiales::where('id', $id)->delete();
+
+        return response()->json(['success' => 1]);
+    }
+
+
 
     //*******************************************************************
 

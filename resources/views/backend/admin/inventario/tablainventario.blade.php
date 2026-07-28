@@ -37,6 +37,14 @@
                                                 onclick="informacion({{ $dato->id }})">
                                             <i class="fas fa-edit"></i> Editar
                                         </button>
+
+                                        {{-- ← NUEVO --}}
+                                        @if($dato->entradas == 0 && $dato->salidas == 0)
+                                            <button type="button" style="margin: 2px" class="btn btn-danger btn-xs"
+                                                    onclick="eliminar({{ $dato->id }}, '{{ addslashes($dato->nombre) }}')">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -48,3 +56,4 @@
         </div>
     </div>
 </section>
+

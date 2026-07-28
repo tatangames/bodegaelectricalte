@@ -616,5 +616,41 @@
                 });
         }
 
+
+        function eliminar(id, nombre) {
+            Swal.fire({
+                title: '¿Eliminar material?',
+                html: `<strong>${nombre}</strong><br><small class="text-muted">Solo se puede eliminar si no tiene entradas ni salidas registradas.</small>`,
+                type: 'warning',                          // ← correcto en v8
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',        // ← sin HTML en el botón (v8 no lo soporta bien)
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.value) {                       // ← en v8 es result.value, NO result.isConfirmed
+                    openLoading();
+                    axios.post(urlAdmin + '/admin/inventario/eliminar', { id: id })
+                        .then((response) => {
+                            closeLoading();
+                            if (response.data.success === 1) {
+                                toastr.success('Material eliminado correctamente');
+                                cargarTabla(filtroActual);
+                            } else {
+                                Swal.fire({
+                                    type: 'error',
+                                    title: 'No se puede eliminar',
+                                    text: response.data.mensaje || 'Este material tiene movimientos registrados.'
+                                });
+                            }
+                        })
+                        .catch(() => {
+                            closeLoading();
+                            toastr.error('Error al intentar eliminar');
+                        });
+                }
+            });
+        }
+
     </script>
 @endsection

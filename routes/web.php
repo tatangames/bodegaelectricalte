@@ -94,6 +94,8 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('/admin/inventario/nuevo', [RepuestosController::class, 'nuevoMaterial']);
     Route::post('/admin/inventario/informacion', [RepuestosController::class, 'informacionMaterial']);
     Route::post('/admin/inventario/editar', [RepuestosController::class, 'editarMaterial']);
+    Route::post('/admin/inventario/eliminar', [RepuestosController::class, 'eliminar']);
+
 
     // --- REGISTRO DE UN PROYECTO ---
     Route::get('/admin/proyecto/index', [TipoProyectoController::class,'index'])->name('admin.tiposproyecto.index');
