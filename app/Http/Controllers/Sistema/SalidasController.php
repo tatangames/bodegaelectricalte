@@ -199,33 +199,39 @@ class SalidasController extends Controller
         // ── Validar que el proyecto no esté cerrado ──
         $proyecto = Tipoproyecto::find($request->proyecto);
         if (!$proyecto || $proyecto->transferido == 1) {
-            return ['success' => 3]; // proyecto cerrado
+            return ['success' => 3];
         }
 
-        // ✅ Agrupar por id_entrada_detalle y sumar cantidades del mismo lote
-        $agrupado = [];
-        foreach ($contenedor as $item) {
+        // ── Agrupar por id_entrada_detalle y sumar cantidades del mismo lote ──
+        // También conservamos la primera fila asociada a cada lote para el mensaje de error
+        $agrupado    = [];
+        $filasPorLote = [];
+
+        foreach ($contenedor as $index => $item) {
             $id = $item['infoIdEntradaDeta'];
+
             if (!isset($agrupado[$id])) {
-                $agrupado[$id] = 0;
+                $agrupado[$id]     = 0;
+                $filasPorLote[$id] = $index + 1; // fila real (base 1) del contenedor
             }
+
             $agrupado[$id] += (int) $item['infoCantidad'];
         }
 
         DB::beginTransaction();
 
         try {
-            $fila = 1;
-            // ── Validar disponibilidad ──
+            // ── Validar disponibilidad y fechas ──
             foreach ($agrupado as $idEntradaDetalle => $cantidadSalida) {
 
+                // ── Disponibilidad ──
                 $disponible = DB::table('entradas_detalle as ed')
                     ->leftJoin(
                         DB::raw('(
-                SELECT id_entrada_detalle, SUM(cantidad_salida) as total_salido
-                FROM salidas_detalle
-                GROUP BY id_entrada_detalle
-            ) as sd'),
+                        SELECT id_entrada_detalle, SUM(cantidad_salida) as total_salido
+                        FROM salidas_detalle
+                        GROUP BY id_entrada_detalle
+                    ) as sd'),
                         'sd.id_entrada_detalle', '=', 'ed.id'
                     )
                     ->where('ed.id', $idEntradaDetalle)
@@ -242,14 +248,14 @@ class SalidasController extends Controller
 
                     return [
                         'success'         => 2,
-                        'fila'            => $fila,
+                        'fila'            => $filasPorLote[$idEntradaDetalle], // ✅ fila real
                         'nombre_material' => $nombreMaterial ?? 'Material desconocido',
                         'cantidad_pedida' => $cantidadSalida,
-                        'disponible'      => (int) $disponible,
+                        'disponible'      => (int) ($disponible ?? 0),
                     ];
                 }
 
-                // ── 🆕 Validar que la fecha de salida no sea anterior a la fecha de ingreso ──
+                // ── Validar que fecha de salida no sea anterior a fecha de ingreso ──
                 $fechaIngreso = DB::table('entradas_detalle as ed')
                     ->join('entradas as e', 'e.id', '=', 'ed.id_entradas')
                     ->where('ed.id', $idEntradaDetalle)
@@ -264,32 +270,29 @@ class SalidasController extends Controller
                         ->value('m.nombre');
 
                     return [
-                        'success'          => 4,
-                        'nombre_material'  => $nombreMaterial ?? 'Material desconocido',
-                        'fecha_salida'     => Carbon::parse($request->fecha)->format('d-m-Y'),
-                        'fecha_ingreso'    => Carbon::parse($fechaIngreso)->format('d-m-Y'),
+                        'success'         => 4,
+                        'nombre_material' => $nombreMaterial ?? 'Material desconocido',
+                        'fecha_salida'    => Carbon::parse($request->fecha)->format('d-m-Y'),
+                        'fecha_ingreso'   => Carbon::parse($fechaIngreso)->format('d-m-Y'),
                     ];
                 }
-                // ─────────────────────────────────────────────────────────────────────────
-
-                $fila++;
             }
 
-            // Guardar cabecera
-            $salida                  = new Salidas();
-            $salida->fecha           = Carbon::parse($request->fecha);
-            $salida->descripcion     = $request->descripcion;
-            $salida->id_tipoproyecto = $request->proyecto;
-            $salida->es_transferencia= 0;
+            // ── Guardar cabecera ──
+            $salida                              = new Salidas();
+            $salida->fecha                       = Carbon::parse($request->fecha);
+            $salida->descripcion                 = $request->descripcion;
+            $salida->id_tipoproyecto             = $request->proyecto;
+            $salida->es_transferencia            = 0;
             $salida->id_tipoproyecto_transferencia = null;
             $salida->save();
 
-            // ✅ Guardar detalle con cantidades agrupadas
+            // ── Guardar detalle con cantidades ya agrupadas ──
             foreach ($agrupado as $idEntradaDetalle => $cantidadSalida) {
-                $detalle                      = new SalidasDetalle();
-                $detalle->id_salida           = $salida->id;
-                $detalle->id_entrada_detalle  = $idEntradaDetalle;
-                $detalle->cantidad_salida     = $cantidadSalida;
+                $detalle                     = new SalidasDetalle();
+                $detalle->id_salida          = $salida->id;
+                $detalle->id_entrada_detalle = $idEntradaDetalle;
+                $detalle->cantidad_salida    = $cantidadSalida;
                 $detalle->save();
             }
 
@@ -302,7 +305,6 @@ class SalidasController extends Controller
             return ['success' => 99];
         }
     }
-
 
 
 

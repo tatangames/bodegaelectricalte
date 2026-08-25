@@ -328,7 +328,7 @@
 
                                         <input type="hidden" id="id-material-seleccionado">
 
-                                        {{-- Fila: Material + U/M (solo lo que existe en la tabla) --}}
+                                        {{-- Fila: Material + U/M --}}
                                         <div class="form-row mb-3">
                                             <div class="col-md-9">
                                                 <label class="field-label">Material</label>
@@ -443,11 +443,11 @@
                 seguroBuscador = false;
                 var row   = $(e).closest('tr');
                 var texto = e.value;
-                var idProyecto = $('#select-proyecto').val(); // 👈 tomar el proyecto seleccionado
+                var idProyecto = $('#select-proyecto').val();
 
                 axios.post(urlAdmin + '/admin/buscar/material/disponible', {
                     'query': texto,
-                    'id_proyecto': idProyecto  // 👈 enviarlo
+                    'id_proyecto': idProyecto
                 })
                     .then((response) => {
                         seguroBuscador = true;
@@ -465,7 +465,7 @@
             openLoading();
             var formData = new FormData();
             formData.append('id', edrop.id);
-            formData.append('id_proyecto', $('#select-proyecto').val()); // 👈
+            formData.append('id_proyecto', $('#select-proyecto').val());
             $("#matrizM tbody tr").remove();
 
             axios.post(urlAdmin + '/admin/buscar/material/disponibilidad', formData)
@@ -483,8 +483,23 @@
                         $('#info-medida').val(response.data.nombreMedida);
 
                         $.each(response.data.arrayIngreso, function (key, val) {
-                            var markup = "<tr>" +
-                                "<td><input disabled value='" + val.fechaIngreso + "' class='form-control form-control-sm' type='text'></td>" +
+
+                            // ✅ Verificar si este lote (id_entrada_detalle) ya está en la tabla principal
+                            var loteYaAgregado = false;
+                            $("input[name='idmaterialArray[]']").each(function () {
+                                if ($(this).attr("data-idmaterialArray") == val.id) {
+                                    loteYaAgregado = true;
+                                    return false; // break
+                                }
+                            });
+
+                            // Badge que indica si el lote ya fue agregado
+                            var badgeLote = loteYaAgregado
+                                ? '<span class="badge badge-warning ml-1" title="Este lote ya fue agregado al detalle">Ya agregado</span>'
+                                : '';
+
+                            var markup = "<tr" + (loteYaAgregado ? " style='background:#fff3cd'" : "") + ">" +
+                                "<td><input disabled value='" + val.fechaIngreso + "' class='form-control form-control-sm' type='text'>" + badgeLote + "</td>" +
                                 "<td><input disabled value='" + (val.codigo ?? '') + "' class='form-control form-control-sm' type='text'></td>" +
                                 "<td><input disabled value='" + val.precioFormat + "' class='form-control form-control-sm' type='text'></td>" +
                                 "<td>" +
@@ -495,9 +510,12 @@
                                 "<td>" +
                                 "<input class='form-control form-control-sm' " +
                                 "data-idfilaentradadetalle='" + val.id + "' " +
+                                "data-lote-ya-agregado='" + (loteYaAgregado ? '1' : '0') + "' " +
                                 "name='arrayCantidadSalida[]' min='0' max='" + val.cantidadActual + "' type='number' " +
                                 "onkeydown=\"return validateInput(event);\" " +
-                                "oninput=\"validateCantidadSalida(this, " + val.cantidadActual + ");\">" +
+                                "oninput=\"validateCantidadSalida(this, " + val.cantidadActual + ");\"" +
+                                (loteYaAgregado ? " disabled title='Lote ya agregado al detalle'" : "") +
+                                ">" +
                                 "</td>" +
                                 "</tr>";
 
@@ -514,9 +532,10 @@
 
         // ── Agregar filas al detalle ──────────────────────────────────────
         function agregarAlDetalle() {
-            var arrayIdEntradaDetalle    = $("input[name='arrayCantidadSalida[]']").map(function () { return $(this).attr("data-idfilaentradadetalle"); }).get();
-            var arrayCantidadSalida      = $("input[name='arrayCantidadSalida[]']").map(function () { return $(this).val(); }).get();
-            var arrayCantidadActual      = $("input[name='arrayCantidadActual[]']").map(function () { return $(this).attr("data-cantidadActualFila"); }).get();
+            var arrayIdEntradaDetalle = $("input[name='arrayCantidadSalida[]']").map(function () { return $(this).attr("data-idfilaentradadetalle"); }).get();
+            var arrayCantidadSalida   = $("input[name='arrayCantidadSalida[]']").map(function () { return $(this).val(); }).get();
+            var arrayCantidadActual   = $("input[name='arrayCantidadActual[]']").map(function () { return $(this).attr("data-cantidadActualFila"); }).get();
+            var arrayLoteYaAgregado   = $("input[name='arrayCantidadSalida[]']").map(function () { return $(this).attr("data-lote-ya-agregado"); }).get();
 
             colorBlancoTabla();
             var habraSalida = true;
@@ -524,6 +543,10 @@
             for (var a = 0; a < arrayCantidadSalida.length; a++) {
                 var filaCantidad           = arrayCantidadSalida[a];
                 var infoFilaCantidadActual = arrayCantidadActual[a];
+                var loteYaAgregado         = arrayLoteYaAgregado[a] === '1';
+
+                // ✅ Ignorar filas de lotes ya agregados (están disabled, vienen vacías)
+                if (loteYaAgregado) continue;
 
                 if (filaCantidad !== '') {
                     if (filaCantidad <= 0) {
@@ -546,10 +569,14 @@
             var nFilas      = $('#matriz >tbody >tr').length;
 
             for (var z = 0; z < arrayCantidadSalida.length; z++) {
-                var fc = arrayCantidadSalida[z];
+                var fc             = arrayCantidadSalida[z];
+                var loteSkip       = arrayLoteYaAgregado[z] === '1';
+
+                // ✅ No agregar lotes ya presentes ni vacíos
+                if (loteSkip) continue;
+
                 if (fc !== '' && fc != 0) {
                     nFilas++;
-
 
                     var markup = "<tr>" +
                         "<td><p id='fila" + nFilas + "' class='form-control' style='max-width:55px'>" + nFilas + "</p></td>" +
@@ -569,8 +596,7 @@
             $('#modalCantidad').modal('hide');
             document.getElementById('inputBuscador').value = '';
 
-            toastr.success("Agregado")
-            //Swal.fire({ position: 'center', icon: 'success', title: 'Agregado al Detalle', showConfirmButton: false, timer: 1500 });
+            toastr.success("Agregado");
         }
 
         // ── Preguntar antes de guardar ────────────────────────────────────
@@ -603,9 +629,9 @@
                 return;
             }
 
-            var reglaEntero        = /^[0-9]\d*$/;
-            var idEntradaDetalle   = $("input[name='idmaterialArray[]']").map(function () { return $(this).attr("data-idmaterialArray"); }).get();
-            var salidaCantidad     = $("input[name='salidaArray[]']").map(function ()     { return $(this).attr("data-cantidadSalida"); }).get();
+            var reglaEntero      = /^[0-9]\d*$/;
+            var idEntradaDetalle = $("input[name='idmaterialArray[]']").map(function () { return $(this).attr("data-idmaterialArray"); }).get();
+            var salidaCantidad   = $("input[name='salidaArray[]']").map(function ()     { return $(this).attr("data-cantidadSalida"); }).get();
 
             for (var a = 0; a < idEntradaDetalle.length; a++) {
                 var ic = salidaCantidad[a];
@@ -630,7 +656,7 @@
             formData.append('descripcion',     descripcion);
             formData.append('contenedorArray', JSON.stringify(contenedorArray));
             formData.append('fichaNombre',     nombre);
-            formData.append('fichaTalonario',     nTalonario);
+            formData.append('fichaTalonario',  nTalonario);
 
             axios.post(urlAdmin + '/admin/salida/guardar', formData)
                 .then((response) => {
@@ -648,9 +674,7 @@
                             confirmButtonText: 'Entendido'
                         });
                     }
-                    else if (response.data.success === 3) {
-                        toastr.error("El proyecto esta Cerrado")
-                    }
+                    else if (response.data.success === 3) { toastr.error("El proyecto está Cerrado"); }
                     else if (response.data.success === 4) {
                         Swal.fire({
                             title: 'Fecha inválida',
@@ -664,13 +688,11 @@
                             confirmButtonText: 'Entendido'
                         });
                     }
-                    else if (response.data.success === 10) {msgActualizado(); }
+                    else if (response.data.success === 10) { msgActualizado(); }
                     else                                   { toastr.error('Error al guardar'); }
                 })
                 .catch(() => { toastr.error('Error al guardar'); closeLoading(); });
         }
-
-
 
         // ── Mensaje final ─────────────────────────────────────────────────
         function msgActualizado() {
@@ -723,8 +745,6 @@
             if (Number(input.value) > maxCantidad) input.value = maxCantidad;
         }
 
-
-
         function generarPdfTalonario() {
             colorBlancoTabla();
 
@@ -763,7 +783,6 @@
                 });
             }
 
-            // Crear form oculto para POST y abrir en nueva pestaña
             var form = document.createElement('form');
             form.method = 'POST';
             form.action = urlAdmin + '/admin/reporte/talonario/salida';
@@ -791,7 +810,6 @@
             form.submit();
             document.body.removeChild(form);
         }
-
 
     </script>
 
