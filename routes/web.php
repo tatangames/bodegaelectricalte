@@ -149,7 +149,7 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('/admin/transferencia/material/xproyecto', [SalidasController::class,'retirarMaterialDeProyectosCerrados']);
     // Ruta nueva para cargar materiales del proyecto cerrado
     Route::post('/admin/transferencia/materiales/cerrado', [SalidasController::class, 'materialesDisponiblesCerrado']);
-    // Agregar esta ruta junto a las demás de reservas
+    // crear reservas
     Route::post('/admin/reservas/crear', [ReservasController::class, 'crearReserva']);
 
     // --- RESERVAS ---
@@ -243,6 +243,34 @@ Route::middleware('auth:admin')->group(function () {
     // --- REPORTE SALIDA TALONARIO ---
     Route::post('/admin/reporte/talonario/salida', [ReportesController::class, 'pdfReporteSalidaTalonario']);
 
+    // --- REPORTE ---
+    Route::get('/admin/bitacoras/reportes/index', [BitacoraController::class, 'vistaReporteIndex'])->name('admin.bitacoras.reportes.index');
+    Route::get('/admin/bitacoras/reportes/pdf/{desde}/{hasta}/{empleado}/{conFotos}', [BitacoraController::class, 'pdfReporteBitacoras']);
+
+    Route::get('/admin/reporte/cerrados/totalizado/pdf',
+        [ReportesController::class, 'reporteTotalizadoCerrados']);
+
+
+    // REPORTE INVENTARIO TOTALIZADO — DESGLOSE POR PRECIO
+    Route::get('/admin/reporte/cerrados/totalizado-desglosado/pdf',
+        [ReportesController::class, 'reporteTotalizadoCerradosDesglosadoPrecio']);
+
+    Route::get('/admin/reporte/cerrados/consolidado/materiales/pdf',
+        [ReportesController::class, 'reporteConsolidadoMaterialesCerrados']);
+
+    Route::get('/admin/reporte/cerrado/conteo/pdf/{id}',
+        [ReportesController::class, 'reporteConteoFisicoCerrado']);
+
+    Route::get('/admin/reporte/cerrado/lote/pdf/{id}',
+        [ReportesController::class, 'reporteLoteCerrado']);
+
+
+    // REPORTE INVENTARIO DESGLOSADO — DESGLOSE POR PRECIO (POR PROYECTO ACTIVO)
+    Route::get('/admin/reporte/quetengopor/proyectos/totalizado-desglosado/pdf/{id}',
+        [ReportesController::class, 'reporteTotalizadoActivoDesglosadoPrecio']);
+
+
+
 
 
 
@@ -269,16 +297,6 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/admin/bitacoras/historial/eliminar', [BitacoraController::class, 'historialBitacoraEliminar']);
     Route::get('/admin/bitacoras/historial/eliminar-foto', [BitacoraController::class, 'historialBitacoraEliminarFoto']);
     Route::post('/admin/bitacoras/historial/agregar-fotos', [BitacoraController::class, 'historialBitacoraAgregarFotos']);
-
-    // --- REPORTE ---
-    Route::get('/admin/bitacoras/reportes/index', [BitacoraController::class, 'vistaReporteIndex'])->name('admin.bitacoras.reportes.index');
-    Route::get('/admin/bitacoras/reportes/pdf/{desde}/{hasta}/{empleado}/{conFotos}', [BitacoraController::class, 'pdfReporteBitacoras']);
-
-
-    // REPORTE INVENTARIO DESGLOSADO — DESGLOSE POR PRECIO (POR PROYECTO ACTIVO)
-    Route::get('/admin/reporte/quetengopor/proyectos/totalizado-desglosado/pdf/{id}',
-        [ReportesController::class, 'reporteTotalizadoActivoDesglosadoPrecio']);
-
 
 
 
