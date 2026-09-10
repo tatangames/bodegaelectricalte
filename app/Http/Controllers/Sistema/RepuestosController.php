@@ -91,6 +91,7 @@ class RepuestosController extends Controller
         return $dato->save() ? ['success' => 1] : ['success' => 2];
     }
 
+
     public function informacionMaterial(Request $request)
     {
         $validar = Validator::make($request->all(), ['id' => 'required']);
@@ -120,6 +121,18 @@ class RepuestosController extends Controller
             'id_objespecifico' => 'required|exists:objeto_especifico,id',
         ]);
         if ($validar->fails()) { return ['success' => 0]; }
+
+        // Bloquear edición si el material ya tiene entradas registradas.
+        // (El botón "Editar" ya se deshabilita en la vista, pero validamos
+        // también aquí por si el endpoint se llama directamente).
+        $tieneEntradas = EntradasDetalle::where('id_material', $request->id)->exists();
+
+        if ($tieneEntradas) {
+            return [
+                'success' => 3,
+                'msg'     => 'Este material ya tiene entradas registradas y no puede editarse.',
+            ];
+        }
 
         Materiales::where('id', $request->id)->update([
             'id_medida'        => $request->unidad ?: null,

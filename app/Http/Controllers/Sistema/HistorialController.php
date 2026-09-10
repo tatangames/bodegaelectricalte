@@ -654,13 +654,21 @@ class HistorialController extends Controller
                 $q->whereDate('fecha', '<=', $request->fecha_hasta);
             })
 
-            // Material
+            // Material — busca tanto en el snapshot (nombre_material) como
+            // en el nombre "vivo" del material relacionado, porque el
+            // snapshot no siempre queda poblado
             ->when($request->material, function ($q) use ($request) {
 
                 $busqueda = '%' . trim($request->material) . '%';
 
                 $q->whereHas('detalle', function ($q2) use ($busqueda) {
-                    $q2->where('nombre_material', 'LIKE', $busqueda);
+                    $q2->where(function ($q3) use ($busqueda) {
+                        $q3->where('nombre_material', 'LIKE', $busqueda)
+                            ->orWhereHas('entradaDetalle.material', function ($q4) use ($busqueda) {
+                                $q4->where('nombre', 'LIKE', $busqueda)
+                                    ->orWhere('codigo', 'LIKE', $busqueda);
+                            });
+                    });
                 });
             })
 
@@ -716,6 +724,8 @@ class HistorialController extends Controller
             compact('arrayTransferencias')
         );
     }
+
+
 
 
     public function informacionTransferencia(Request $request)
@@ -836,8 +846,8 @@ class HistorialController extends Controller
 
         $detalle = $transferencia->detalle()
             ->with([
-                // Cargamos entradaDetalle → material → objetoEspecifico → cuenta → rubro
-                'entradaDetalle.material.objetoEspecifico.cuenta'
+                'entradaDetalle.material.objetoEspecifico.cuenta',
+                'entradaDetalle.material.unidadMedida',
             ])
             ->get()
             ->map(function ($item) {
@@ -846,13 +856,12 @@ class HistorialController extends Controller
                 $objEsp   = $material?->objetoEspecifico;
 
                 return [
-                    // nombre_material guardado en transferencia_detalle como snapshot
-                    // si está vacío caemos al nombre vivo del material
                     'nombre_material'   => $item->nombre_material
                         ?: ($material?->nombre ?? '—'),
                     'objeto_especifico' => $objEsp
                         ? $objEsp->codigo . ' — ' . $objEsp->nombre
                         : '—',
+                    'unidad_medida'     => $material?->unidadMedida?->nombre ?? '—',
                     'cantidad_sobrante' => $item->cantidad_sobrante,
                     'precio'            => number_format($item->precio, 4),
                 ];

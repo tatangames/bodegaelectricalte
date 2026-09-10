@@ -119,6 +119,7 @@ Route::middleware('auth:admin')->group(function () {
     // --- CIERRE DE PROYECTOS ---
     Route::get('/admin/cierre/proyectos', [SalidasController::class,'indexTransferencias'])->name('admin.transferencias.index');
     Route::post('/admin/generar/salida/transferencia',  [SalidasController::class,'generarSalidaTransferencia']);
+    Route::post('/admin/proyectos/reabrir',            [SalidasController::class, 'reabrirProyecto']);
 
     // --- HISTORIAL / ENTRADAS ---
     Route::get('/admin/historial/entradas', [HistorialController::class,'indexHistorialEntradas'])->name('admin.historial.entradas.index');
@@ -165,20 +166,22 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/admin/historial/transferencias/acta/pdf/{id}', [HistorialController::class, 'actaDesdeHistorial']);
 
 
-    // --- REPORTES DE DIFERENTES FORMULARIOS ---
+    // --- PDF - GENERADO TRANSFERENCIA A PROYECTO PRE AUTORIZACION ---
     Route::post('/admin/reporte/form/solicitud/preview',
         [ReportesController::class, 'formSolicitudPreview'])
         ->name('reporte.form.solicitud.preview');
 
+    // --- PDF - GENERADO EN SALIDA GENERAL
     Route::post('/admin/reporte/form003/solicitud/preview',
         [ReportesController::class, 'form003SolicitudPreview'])
         ->name('reporte.form003.solicitud.preview');
 
+    // --- PDF - GENERADO TRANSFERENCIA A PROYECTO YA AUTORIZADO ---
     Route::post('/admin/reporte/acta/preview',
         [ReportesController::class, 'actaRecepcionPreview'])
         ->name('reporte.acta.preview');
 
-
+    // --- PDF - GENERADO TRANSFERENCIA A PROYECTO YA AUTORIZADO ---
     Route::post('/admin/reporte/form001/reserva/preview',
         [ReportesController::class, 'form001ReservaPreview'])
         ->name('reporte.form001.reserva.preview');
@@ -186,7 +189,7 @@ Route::middleware('auth:admin')->group(function () {
 
     Route::post('/admin/reporte/acta/preview/reserva',
         [ReportesController::class, 'actaRecepcionPreviewReserva'])
-        ->name('reporte.acta.preview');
+        ->name('reporte.acta.preview.reserva');
 
 
     // --- REPORTE / ENTRADA POR PROYECTO
@@ -203,6 +206,12 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('/admin/firmas/proyectos/traspaso/actualizar', [ReportesController::class, 'actualizarFirmasTraspaso']);
 
 
+    Route::get('/admin/reporte/quetengopor/proyectos/totalizado/pdf', [ReportesController::class, 'reporteTotalizadoTodosProyectos']);
+    Route::get('/admin/reporte/quetengopor/proyectos/totalizado-precio/pdf', [ReportesController::class, 'reporteTotalizadoTodosProyectosPrecio']);
+    Route::get('/admin/reporte/consolidado/materiales/pdf', [ReportesController::class, 'reporteConsolidadoMateriales']);
+
+
+
     // --- REPORTE / VER LOS MATERIALES QUE SOBRARON DE UN PROYECTO COMPLETADO
     Route::get('/admin/reporte/inventario/sobranteterminado/proy/{idtrans}', [ReportesController::class,'reporteProyectoTerminado']);
 
@@ -215,7 +224,6 @@ Route::middleware('auth:admin')->group(function () {
         [ReportesController::class, 'reporteDestinoSobrantesDescriptivo']);
 
     // --- REPORTE / ENTREGAS MENSUALES - GEAD-002-REPO
-    Route::get('/admin/reporte/proyectos/codigos', [ReportesController::class,'vistaReporteProyectoCodigos'])->name('admin.reporte.proyectos.codigos.index');
     Route::get('/admin/reporte/proyectos/codigos/pdf/{idproy}/{desde}/{hasta}/{descripcion?}', [ReportesController::class, 'reportePDFProyectoCodigos']);
 
     // --- REPORTE / PROYECTO CERRADO - INVENTARIO QUE SOBRO
@@ -234,10 +242,6 @@ Route::middleware('auth:admin')->group(function () {
 
     // --- REPORTE SALIDA TALONARIO ---
     Route::post('/admin/reporte/talonario/salida', [ReportesController::class, 'pdfReporteSalidaTalonario']);
-
-
-
-
 
 
 
@@ -271,6 +275,9 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/admin/bitacoras/reportes/pdf/{desde}/{hasta}/{empleado}/{conFotos}', [BitacoraController::class, 'pdfReporteBitacoras']);
 
 
+    // REPORTE INVENTARIO DESGLOSADO — DESGLOSE POR PRECIO (POR PROYECTO ACTIVO)
+    Route::get('/admin/reporte/quetengopor/proyectos/totalizado-desglosado/pdf/{id}',
+        [ReportesController::class, 'reporteTotalizadoActivoDesglosadoPrecio']);
 
 
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cuenta;
 use App\Models\Departamentos;
 use App\Models\Empleado;
+use App\Models\Materiales;
 use App\Models\ObjetoEspecifico;
 use App\Models\Rubro;
 use App\Models\UnidadMedida;
@@ -55,7 +56,9 @@ class ConfiguracionController extends Controller
 
         if($lista = UnidadMedida::where('id', $request->id)->first()){
 
-            return ['success' => 1, 'medida' => $lista];
+            $enUso = Materiales::where('id_medida', $request->id)->exists();
+
+            return ['success' => 1, 'medida' => $lista, 'enUso' => $enUso];
         }else{
             return ['success' => 2];
         }
@@ -73,6 +76,13 @@ class ConfiguracionController extends Controller
         if ($validar->fails()){ return ['success' => 0];}
 
         if(UnidadMedida::where('id', $request->id)->first()){
+
+            // Verificar si algún material ya tiene asignada esta unidad de medida
+            $tieneMateriales = Materiales::where('id_medida', $request->id)->exists();
+
+            if($tieneMateriales){
+                return ['success' => 3]; // No se puede editar, está en uso
+            }
 
             UnidadMedida::where('id', $request->id)->update([
                 'nombre' => $request->medida
@@ -163,7 +173,6 @@ class ConfiguracionController extends Controller
 
 
 
-
     //********* RUBRO **************************************************************
 
     public function indexRubro(){
@@ -197,21 +206,30 @@ class ConfiguracionController extends Controller
         }
     }
 
-    public function informacionRubro(Request $request){
-        $regla = array(
+    public function informacionRubro(Request $request)
+    {
+        $validar = Validator::make($request->all(), [
             'id' => 'required',
-        );
+        ]);
 
-        $validar = Validator::make($request->all(), $regla);
+        if ($validar->fails()) { return ['success' => 0]; }
 
-        if ($validar->fails()){ return ['success' => 0];}
+        $dato = Rubro::find($request->id);
 
-        if($lista = Rubro::where('id', $request->id)->first()){
+        if (!$dato) { return ['success' => 2]; }
 
-            return ['success' => 1, 'info' => $lista];
-        }else{
-            return ['success' => 2];
-        }
+        // Verifica si alguna cuenta de este rubro tiene objetos específicos con materiales
+        $tieneMateriales = $dato->cuentas()
+            ->whereHas('objetosEspecificos', function ($q) {
+                $q->whereHas('materiales');
+            })
+            ->exists();
+
+        return [
+            'success'          => 1,
+            'info'             => $dato,
+            'tiene_materiales' => $tieneMateriales,
+        ];
     }
 
     public function editarRubro(Request $request){
@@ -281,9 +299,18 @@ class ConfiguracionController extends Controller
 
         $dato = Cuenta::find($request->id);
 
-        return $dato
-            ? ['success' => 1, 'info' => $dato]
-            : ['success' => 2];
+        if (!$dato) { return ['success' => 2]; }
+
+        // Verifica si algún objeto específico de esta cuenta tiene materiales
+        $tieneMateriales = $dato->objetosEspecificos()
+            ->whereHas('materiales')
+            ->exists();
+
+        return [
+            'success'          => 1,
+            'info'             => $dato,
+            'tiene_materiales' => $tieneMateriales,
+        ];
     }
 
     public function editarCuenta(Request $request)
@@ -341,11 +368,25 @@ class ConfiguracionController extends Controller
 
     public function informacionObjetoEspecifico(Request $request)
     {
-        $validar = Validator::make($request->all(), ['id' => 'required']);
-        if ($validar->fails()) { return ['success' => 0]; }
+        $obj = ObjetoEspecifico::with('cuenta.rubro')->find($request->id);
 
-        $dato = ObjetoEspecifico::find($request->id);
-        return $dato ? ['success' => 1, 'info' => $dato] : ['success' => 2];
+        if (!$obj) {
+            return response()->json(['success' => 0]);
+        }
+
+        // Verificar si tiene materiales asignados
+        $tieneMateriales = $obj->materiales()->exists(); // ajusta el nombre de la relación
+
+        return response()->json([
+            'success' => 1,
+            'info' => [
+                'id'            => $obj->id,
+                'id_cuenta'     => $obj->id_cuenta,
+                'codigo'        => $obj->codigo,
+                'nombre'        => $obj->nombre,
+            ],
+            'tiene_materiales' => $tieneMateriales,
+        ]);
     }
 
     public function editarObjetoEspecifico(Request $request)
@@ -442,6 +483,7 @@ class ConfiguracionController extends Controller
             return ['success' => 2];
         }
     }
+
 
 
 
