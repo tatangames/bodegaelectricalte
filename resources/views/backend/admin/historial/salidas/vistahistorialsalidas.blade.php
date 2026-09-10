@@ -127,37 +127,49 @@
     </div>
 
     {{-- Modal Editar Salida --}}
-    <div class="modal fade" id="modalEditar" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-md" role="document">
+    <div class="modal fade" id="modalDetalle" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <div class="modal-header bg-warning">
+                <div class="modal-header bg-info">
                     <h5 class="modal-title text-white">
-                        <i class="fas fa-edit mr-2"></i>Editar Salida
+                        <i class="fas fa-list mr-2"></i>
+                        Detalle de Salida —
+                        <span id="detalle-proyecto"></span>
+                        <small class="ml-2" id="detalle-fecha"></small>
+                        <span id="detalle-badge-cerrado" class="badge badge-danger ml-2" style="display:none;">
+                            Proyecto Cerrado
+                        </span>
                     </h5>
                     <button type="button" class="close text-white" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="formulario-editar">
-                        <input type="hidden" id="id-editar">
-                        <div class="form-group">
-                            <label>Fecha <span class="text-danger">*</span></label>
-                            <input type="date" id="fecha-editar" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>Descripción</label>
-                            <textarea id="descripcion-editar" class="form-control"
-                                      rows="3" maxlength="800"
-                                      placeholder="Descripción opcional"></textarea>
-                        </div>
-                    </form>
+                    <div id="detalle-loading" class="text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    </div>
+                    <div id="detalle-contenido" style="display:none;">
+                        <table class="table table-bordered table-striped table-sm">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Código</th>
+                                <th>Material</th>
+                                <th class="text-center">Unidad</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-right">Precio unitario</th>
+                            </tr>
+                            </thead>
+                            <tbody id="detalle-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="detalle-vacio" class="text-center text-muted py-4" style="display:none;">
+                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                        <p>Esta salida no tiene materiales registrados.</p>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-warning" onclick="editar()">
-                        <i class="fas fa-save mr-1"></i>Guardar cambios
-                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -443,6 +455,7 @@
                                     <td>${index + 1}</td>
                                     <td>${fila.codigo}</td>
                                     <td>${fila.material}</td>
+                                    <td class="text-center">${fila.unidad}</td>
                                     <td class="text-center">${fila.cantidad_salida}</td>
                                     <td class="text-right">$${fila.precio}</td>
                                 </tr>`;
