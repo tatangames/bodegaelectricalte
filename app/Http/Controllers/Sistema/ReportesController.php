@@ -9073,7 +9073,7 @@ padding:5px 4px; background:#d9e1f2; text-align:center;";
             <td style='{$tdC}'>" . e($grupo['codigo']) . "</td>
             <td style='{$tdStyle}'>" . e($mat['nombre']) . "</td>
             <td style='{$tdC}'>" . e($mat['medida']) . "</td>
-            <td style='{$tdC} font-weight:bold; color:#1a5c3a;'>" . number_format($mat['stock'], 2) . "</td>
+            <td style='{$tdC} font-weight:bold; color:#000;'>" . number_format($mat['stock'], 2) . "</td>
             <td style='{$tdR}'>$ " . number_format($mat['precio'], 4) . "</td>
             <td style='{$tdR} font-weight:bold;'>$ " . number_format($total, 2) . "</td>
             <td style='{$tdBlanco}'>&nbsp;</td>
