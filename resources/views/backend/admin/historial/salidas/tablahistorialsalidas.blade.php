@@ -21,7 +21,7 @@
                                 <tr>
                                     <td>{{ $dato->id }}</td>
                                     <td>{{ $dato->tipoproyecto->nombre ?? '' }}</td>
-                                    <td>{{ $dato->fecha_fmt }}</td>
+                                    <td data-order="{{ $dato->fecha->format('Y-m-d') }}">{{ $dato->fecha_fmt }}</td>
                                     <td>{{ $dato->descripcion ?? '' }}</td>
                                     <td class="text-center">
                                         @if($cerrado)
