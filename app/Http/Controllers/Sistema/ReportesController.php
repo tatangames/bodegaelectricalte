@@ -9032,7 +9032,7 @@ padding:5px 4px; background:#d9e1f2; text-align:center;";
             <th style='{$thStyle} width:10%;'>Obj. Espec.</th>
             <th style='{$thStyle} width:28%;'>Material</th>
             <th style='{$thStyle} width:8%;'>Medida</th>
-            <th style='{$thStyle} width:8%;'>Stock Sistema</th>
+            <th style='{$thStyle} width:8%;'>Disponible</th>
             <th style='{$thStyle} width:10%;'>Precio Unitario</th>
             <th style='{$thStyle} width:10%;'>Total</th>
             <th style='{$thBlanco} width:13%;'>Conteo Físico</th>
