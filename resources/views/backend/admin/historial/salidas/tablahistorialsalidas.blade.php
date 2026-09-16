@@ -32,6 +32,13 @@
                                     </td>
                                     <td class="text-center">
 
+                                        <button type="button"
+                                                style="margin: 3px"
+                                                class="btn btn-primary btn-xs"
+                                                onclick="window.open('{{ url('/admin/historial/salidas/pdf') }}/' + {{ $dato->id }}, '_blank')">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </button>
+
                                         @if(!$cerrado)
                                             <button type="button"
                                                     class="btn btn-success btn-xs"

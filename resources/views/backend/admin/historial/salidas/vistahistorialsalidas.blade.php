@@ -74,13 +74,15 @@
                                 <label class="font-weight-bold">Fecha hasta</label>
                                 <input type="date" class="form-control" id="filtro-fecha-hasta">
                             </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-primary btn-block mb-1" onclick="recargar()">
-                                    <i class="fas fa-search mr-1"></i> Filtrar
-                                </button>
-                                <button class="btn btn-secondary btn-block" onclick="limpiarFiltros()">
-                                    <i class="fas fa-times mr-1"></i> Limpiar
-                                </button>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <div style="width:100%">
+                                    <button class="btn btn-primary btn-block mb-1" id="btn-filtrar" onclick="buscarConFiltros()">
+                                        <i class="fas fa-search mr-1"></i> Filtrar
+                                    </button>
+                                    <button class="btn btn-secondary btn-block" onclick="limpiarFiltros()">
+                                        <i class="fas fa-times mr-1"></i> Limpiar
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -113,20 +115,77 @@
                 <div class="card card-blue">
                     <div class="card-header">
                         <h3 class="card-title">Listado de Salidas</h3>
+                        <div class="card-tools">
+                            <span class="badge badge-info" id="badge-total" style="display:none"></span>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div id="tablaDatatable"></div>
+                    <div class="card-body p-0">
+
+                        {{-- Mensaje inicial: aún no se ha filtrado --}}
+                        <div id="div-instruccion" class="text-center text-muted py-5">
+                            <i class="fas fa-search fa-3x mb-3 d-block"></i>
+                            <p class="mb-0">Utiliza los filtros de arriba y presiona <strong>Filtrar</strong> para ver el historial.</p>
+                        </div>
+
+                        {{-- Spinner mientras carga --}}
+                        <div id="div-cargando" class="text-center text-muted py-5" style="display:none">
+                            <i class="fas fa-spinner fa-spin fa-3x mb-3 d-block"></i>
+                            <p class="mb-0">Cargando resultados…</p>
+                        </div>
+
+                        {{-- Tabla de resultados --}}
+                        <div id="div-tabla" style="display:none">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="tablaDatatable"></div>
+                                </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
         </section>
     </div>
 
-    {{-- Modal Editar Salida --}}
+    {{-- ══ MODAL: EDITAR SALIDA ══ --}}
+    <div class="modal fade" id="modalEditar" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title text-white">
+                        <i class="fas fa-edit mr-2"></i>Editar Salida
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="formulario-editar">
+                        <input type="hidden" id="id-editar">
+                        <div class="form-group">
+                            <label>Fecha <span class="text-danger">*</span></label>
+                            <input type="date" id="fecha-editar" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción</label>
+                            <textarea id="descripcion-editar" class="form-control"
+                                      rows="3" maxlength="800"
+                                      placeholder="Descripción opcional"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-warning" onclick="editar()">
+                        <i class="fas fa-save mr-1"></i>Guardar cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ══ MODAL: DETALLE SALIDA ══ --}}
     <div class="modal fade" id="modalDetalle" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -174,54 +233,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Modal Detalle Salida --}}
-    <div class="modal fade" id="modalDetalle" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-info">
-                    <h5 class="modal-title text-white">
-                        <i class="fas fa-list mr-2"></i>
-                        Detalle de Salida —
-                        <span id="detalle-proyecto"></span>
-                        <small class="ml-2" id="detalle-fecha"></small>
-                        <span id="detalle-badge-cerrado" class="badge badge-danger ml-2" style="display:none;">
-                            Proyecto Cerrado
-                        </span>
-                    </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="detalle-loading" class="text-center py-4">
-                        <i class="fas fa-spinner fa-spin fa-2x"></i>
-                    </div>
-                    <div id="detalle-contenido" style="display:none;">
-                        <table class="table table-bordered table-striped table-sm">
-                            <thead class="thead-dark">
-                            <tr>
-                                <th>#</th>
-                                <th>Código</th>
-                                <th>Material</th>
-                                <th class="text-center">Cantidad</th>
-                                <th class="text-right">Precio unitario</th>
-                            </tr>
-                            </thead>
-                            <tbody id="detalle-tbody"></tbody>
-                        </table>
-                    </div>
-                    <div id="detalle-vacio" class="text-center text-muted py-4" style="display:none;">
-                        <i class="fas fa-inbox fa-2x mb-2"></i>
-                        <p>Esta salida no tiene materiales registrados.</p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
 @stop
 
 @section('js')
@@ -231,9 +242,9 @@
     <script src="{{ asset('js/select2.min.js') }}" type="text/javascript"></script>
 
     <script>
-        $(function () {
-            const ruta = "{{ url('/admin/historial/salidas/tabla') }}";
+        const RUTA_TABLA = "{{ url('/admin/historial/salidas/tabla') }}";
 
+        $(function () {
             // ── Select2 con badge de estado ───────────────────────
             $('#filtro-proyecto').select2({
                 theme: 'bootstrap-5',
@@ -242,7 +253,7 @@
                 language: { noResults: function () { return 'No encontrado'; } },
                 templateResult: function (data) {
                     if (!data.id) return data.text;
-                    var cerrado = $(data.element).data('cerrado') == '1';  // 👈
+                    var cerrado = $(data.element).data('cerrado') == '1';
                     return $('<span class="d-flex align-items-center justify-content-between">')
                         .append($('<span>').text(data.text))
                         .append($('<span>')
@@ -252,7 +263,7 @@
                 },
                 templateSelection: function (data) {
                     if (!data.id) return data.text;
-                    var cerrado = $(data.element).data('cerrado') == '1';  // 👈
+                    var cerrado = $(data.element).data('cerrado') == '1';
                     return $('<span>')
                         .append($('<span>').text(data.text))
                         .append($('<span>')
@@ -262,79 +273,102 @@
                 }
             });
 
-            // ── DataTable ─────────────────────────────────────────
-            function initDataTable() {
-                if ($.fn.DataTable.isDataTable('#tabla')) {
-                    $('#tabla').DataTable().destroy();
-                }
-                $('#tabla').DataTable({
-                    paging: true,
-                    lengthChange: true,
-                    searching: true,
-                    ordering: true,
-                    info: true,
-                    autoWidth: false,
-                    responsive: true,
-                    pagingType: "full_numbers",
-                    lengthMenu: [[50, 100, -1], [50, 100, "Todo"]],
-                    language: {
-                        sProcessing:   "Procesando...",
-                        sLengthMenu:   "Mostrar _MENU_ registros",
-                        sZeroRecords:  "No se encontraron resultados",
-                        sEmptyTable:   "Ningún dato disponible en esta tabla",
-                        sInfo:         "Mostrando _START_ a _END_ de _TOTAL_ registros",
-                        sInfoEmpty:    "Mostrando 0 a 0 de 0 registros",
-                        sInfoFiltered: "(filtrado de _MAX_ registros)",
-                        sSearch:       "Buscar:",
-                        oPaginate: {
-                            sFirst: "Primero", sLast: "Último",
-                            sNext: "Siguiente", sPrevious: "Anterior"
-                        }
-                    },
-                    dom:
-                        "<'row align-items-center'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-md-right'f>>" +
-                        "tr" +
-                        "<'row align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-                });
-                $('#tabla_length select').addClass('form-control form-control-sm');
-                $('#tabla_filter input').addClass('form-control form-control-sm').css('display', 'inline-block');
-            }
-
-            // ── Cargar tabla con filtros ──────────────────────────
-            function cargarTabla() {
-                const proyecto   = $('#filtro-proyecto').val();
-                const fechaDesde = $('#filtro-fecha-desde').val();
-                const fechaHasta = $('#filtro-fecha-hasta').val();
-                const material   = $('#filtro-material').val().trim();
-
-                const params = new URLSearchParams();
-                if (proyecto)   params.append('proyecto',    proyecto);
-                if (fechaDesde) params.append('fecha_desde', fechaDesde);
-                if (fechaHasta) params.append('fecha_hasta', fechaHasta);
-                if (material)   params.append('material',    material);
-
-                const url = params.toString() ? ruta + '?' + params.toString() : ruta;
-
-                $('#tablaDatatable').load(url, function () {
-                    initDataTable();
-                });
-            }
-
-            window.recargar = function () { cargarTabla(); };
-
-            window.limpiarFiltros = function () {
-                $('#filtro-proyecto').val('').trigger('change');
-                $('#filtro-fecha-desde').val('');
-                $('#filtro-fecha-hasta').val('');
-                $('#filtro-material').val('');
-                cargarTabla();
-            };
-
-            cargarTabla();
+            // No se carga la tabla automáticamente al entrar.
+            // Solo se muestra el mensaje de instrucción hasta que el usuario filtre.
         });
-    </script>
 
-    <script>
+        // ── DataTable ─────────────────────────────────────────
+        function initDataTable() {
+            if ($.fn.DataTable.isDataTable('#tabla')) {
+                $('#tabla').DataTable().destroy();
+            }
+            $('#tabla').DataTable({
+                paging: true,
+                lengthChange: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                autoWidth: false,
+                responsive: true,
+                pagingType: "full_numbers",
+                lengthMenu: [[50, 100, -1], [50, 100, "Todo"]],
+                language: {
+                    sProcessing:   "Procesando...",
+                    sLengthMenu:   "Mostrar _MENU_ registros",
+                    sZeroRecords:  "No se encontraron resultados",
+                    sEmptyTable:   "Ningún dato disponible en esta tabla",
+                    sInfo:         "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                    sInfoEmpty:    "Mostrando 0 a 0 de 0 registros",
+                    sInfoFiltered: "(filtrado de _MAX_ registros)",
+                    sSearch:       "Buscar:",
+                    oPaginate: {
+                        sFirst: "Primero", sLast: "Último",
+                        sNext: "Siguiente", sPrevious: "Anterior"
+                    }
+                },
+                dom:
+                    "<'row align-items-center'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-md-right'f>>" +
+                    "tr" +
+                    "<'row align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+            });
+            $('#tabla_length select').addClass('form-control form-control-sm');
+            $('#tabla_filter input').addClass('form-control form-control-sm').css('display', 'inline-block');
+        }
+
+        // ── Buscar con filtros (solo se dispara con el botón Filtrar) ──
+        function buscarConFiltros() {
+            const proyecto   = $('#filtro-proyecto').val();
+            const fechaDesde = $('#filtro-fecha-desde').val();
+            const fechaHasta = $('#filtro-fecha-hasta').val();
+            const material   = $('#filtro-material').val().trim();
+
+            const params = new URLSearchParams();
+            if (proyecto)   params.append('proyecto',    proyecto);
+            if (fechaDesde) params.append('fecha_desde', fechaDesde);
+            if (fechaHasta) params.append('fecha_hasta', fechaHasta);
+            if (material)   params.append('material',    material);
+
+            const url = params.toString() ? RUTA_TABLA + '?' + params.toString() : RUTA_TABLA;
+
+            // ── Mostrar estado "cargando" ──
+            $('#div-instruccion').hide();
+            $('#div-tabla').hide();
+            $('#div-cargando').show();
+            $('#badge-total').hide();
+
+            const $btn = $('#btn-filtrar');
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Filtrando...');
+
+            $('#tablaDatatable').load(url, function (response, status) {
+                $('#div-cargando').hide();
+                $btn.prop('disabled', false).html('<i class="fas fa-search mr-1"></i> Filtrar');
+
+                if (status === 'error') {
+                    toastr.error('Error al cargar el historial');
+                    $('#div-instruccion').show();
+                    return;
+                }
+
+                $('#div-tabla').show();
+                initDataTable();
+                const total = $('#tabla tbody tr').length;
+                $('#badge-total').text(total + ' registros').show();
+            });
+        }
+
+        // Se mantiene el nombre "recargar" por compatibilidad con otras llamadas
+        window.recargar = function () { buscarConFiltros(); };
+
+        function limpiarFiltros() {
+            $('#filtro-proyecto').val('').trigger('change');
+            $('#filtro-fecha-desde').val('');
+            $('#filtro-fecha-hasta').val('');
+            $('#filtro-material').val('');
+            $('#div-cargando').hide();
+            $('#div-tabla').hide();
+            $('#div-instruccion').show();
+            $('#badge-total').hide();
+        }
 
         // ── Editar cabecera ───────────────────────────────────────
         function modalEditar(id) {
@@ -378,7 +412,7 @@
                     if (response.data.success === 1) {
                         toastr.success('Salida actualizada correctamente');
                         $('#modalEditar').modal('hide');
-                        recargar();
+                        buscarConFiltros();
                     } else if (response.data.success === 2) {
                         Swal.fire({
                             title: 'Fecha inválida',
@@ -417,7 +451,7 @@
                             closeLoading();
                             if (response.data.success === 1) {
                                 toastr.success('Salida eliminada correctamente');
-                                recargar();
+                                buscarConFiltros();
                             } else {
                                 toastr.error('Error al eliminar');
                             }
@@ -471,6 +505,31 @@
                     $('#detalle-vacio').show();
                     toastr.error('Error al cargar el detalle');
                 });
+        }
+
+        // ── Generar PDF de una salida ya guardada ──────────────────
+        function generarPdfGuardado(id) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = urlAdmin + '/admin/reporte/talonario/salida/guardada';
+            form.target = '_blank';
+
+            var fields = {
+                '_token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'id': id,
+            };
+
+            Object.keys(fields).forEach(function (key) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = fields[key];
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
         }
 
     </script>

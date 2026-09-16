@@ -231,7 +231,8 @@
                                 <thead>
                                 <tr>
                                     <th style="width:5%">#</th>
-                                    <th style="width:35%">Material</th>
+                                    <th style="width:30%">Material</th>
+                                    <th style="width:15%">U/M</th>
                                     <th style="width:15%">Salida</th>
                                     <th style="width:10%">Opciones</th>
                                 </tr>
@@ -566,6 +567,7 @@
             if (habraSalida) { toastr.error('Registrar mínimo 1 salida'); return; }
 
             var nombreTexto = document.getElementById('info-material').value;
+            var unidadTexto = document.getElementById('info-medida').value;
             var nFilas      = $('#matriz >tbody >tr').length;
 
             for (var z = 0; z < arrayCantidadSalida.length; z++) {
@@ -584,6 +586,7 @@
                         "<input name='idmaterialArray[]' type='hidden' data-idmaterialArray='" + arrayIdEntradaDetalle[z] + "'>" +
                         "<input disabled value='" + nombreTexto + "' class='form-control form-control-sm' type='text'>" +
                         "</td>" +
+                        "<td><input name='unidadArray[]' disabled data-unidad='" + unidadTexto + "' value='" + unidadTexto + "' class='form-control form-control-sm' type='text'></td>" +
                         "<td><input name='salidaArray[]' disabled data-cantidadSalida='" + fc + "' value='" + fc + "' class='form-control form-control-sm' type='text'></td>" +
                         "<td><button type='button' class='btn btn-danger btn-block btn-sm' onclick='borrarFila(this)'>Borrar</button></td>" +
                         "</tr>";
@@ -774,12 +777,17 @@
                 return $(this).closest('tr').find('input[disabled]').eq(0).val();
             }).get();
 
+            var unidadMaterial = $("input[name='unidadArray[]']").map(function () {
+                return $(this).val();
+            }).get();
+
             var contenedorArray = [];
             for (var p = 0; p < salidaCantidad.length; p++) {
                 contenedorArray.push({
                     infoIdEntradaDeta: idEntradaDetalle[p],
                     infoCantidad:      salidaCantidad[p],
                     nombreMaterial:    nombreMaterial[p],
+                    unidadMaterial:    unidadMaterial[p],
                 });
             }
 

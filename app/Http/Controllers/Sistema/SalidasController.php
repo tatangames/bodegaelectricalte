@@ -36,9 +36,6 @@ class SalidasController extends Controller
 
     public function buscadorMaterialDisponible(Request $request)
     {
-
-        Log::info($request->all());
-
         if ($request->get('query')) {
 
             $query      = $request->get('query');
@@ -279,12 +276,14 @@ class SalidasController extends Controller
             }
 
             // ── Guardar cabecera ──
-            $salida                              = new Salidas();
-            $salida->fecha                       = Carbon::parse($request->fecha);
-            $salida->descripcion                 = $request->descripcion;
-            $salida->id_tipoproyecto             = $request->proyecto;
-            $salida->es_transferencia            = 0;
+            $salida                                = new Salidas();
+            $salida->fecha                         = Carbon::parse($request->fecha);
+            $salida->descripcion                   = $request->descripcion;
+            $salida->id_tipoproyecto               = $request->proyecto;
+            $salida->es_transferencia              = 0;
             $salida->id_tipoproyecto_transferencia = null;
+            $salida->ficha_nombre                  = $request->fichaNombre;
+            $salida->ficha_talonario               = $request->fichaTalonario;
             $salida->save();
 
             // ── Guardar detalle con cantidades ya agrupadas ──

@@ -242,6 +242,9 @@ Route::middleware('auth:admin')->group(function () {
 
     // --- REPORTE SALIDA TALONARIO ---
     Route::post('/admin/reporte/talonario/salida', [ReportesController::class, 'pdfReporteSalidaTalonario']);
+    Route::get('/admin/historial/salidas/pdf/{id}', [ReportesController::class, 'pdfReporteSalidaHistorial'])
+        ->name('admin.historial.salidas.pdf');
+
 
     // --- REPORTE ---
     Route::get('/admin/bitacoras/reportes/index', [BitacoraController::class, 'vistaReporteIndex'])->name('admin.bitacoras.reportes.index');
